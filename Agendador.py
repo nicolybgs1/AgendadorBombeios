@@ -6,6 +6,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+from io import BytesIO
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -23,29 +24,25 @@ end_time = st.text_input("Hora de Fim (HH:MM)", "00:00")
 
 # Botão para adicionar a entrada de dados
 if st.button("Adicionar Bombeio"):
-    # Adiciona os dados em um DataFrame
     if "data" not in st.session_state:
         st.session_state.data = []
 
-    # Combinar a data de amanhã com as horas de início e fim
     tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 
-    # Converter as horas de texto para datetime
     try:
         start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
         end_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + end_time)
 
-        # Cálculo e formatação da duração como HH:MM diretamente
-        Duração = end_datetime - start_datetime
-        Duração_str = f"{Duração.components.hours:02}:{Duração.components.minutes:02}"
+        # Cálculo e formatação da duração como HH:MM
+        duration = end_datetime - start_datetime
+        duration_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
         
     except ValueError:
         st.error("Formato de hora inválido. Use HH:MM.")
         start_datetime = pd.NaT
         end_datetime = pd.NaT
-        Duração_str = None
+        duration_str = None
 
-    # Adicionar ao estado da sessão apenas se as datas forem válidas
     if pd.notna(start_datetime) and pd.notna(end_datetime):
         st.session_state.data.append({
             "Companhia": company,
@@ -53,7 +50,7 @@ if st.button("Adicionar Bombeio"):
             "Cota": quota,
             "Início": start_datetime,
             "Fim": end_datetime,
-            "Duração": Duração_str
+            "Duração": duration_str
         })
         st.success("Bombeio adicionado com sucesso!")
     else:
@@ -77,12 +74,28 @@ if "data" in st.session_state:
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim']
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
     ).properties(
         title='Gráfico Gantt'
     )
 
     st.altair_chart(chart, use_container_width=True)
+
+    # Função para converter DataFrame em um arquivo Excel
+    def to_excel(df):
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Bombeios')
+        return output.getvalue()
+
+    # Botão para exportar os dados para XLSX
+    excel = to_excel(df)
+    st.download_button(
+        label="Baixar dados como XLSX",
+        data=excel,
+        file_name='bombeios_agendados.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
 
 
 # In[4]:
