@@ -80,20 +80,26 @@ if "data" in st.session_state:
 
     st.altair_chart(chart, use_container_width=True)
     
-    # Botão para exportar os dados para Excel
-    if st.button("Exportar para Excel"):
+# Botão para exportar os dados para Excel
+if st.button("Exportar para Excel"):
+    # Verifica se o DataFrame não está vazio
+    if not df.empty:
         # Cria um arquivo em memória
         output = BytesIO()
+
+        # Usando ExcelWriter com 'openpyxl' para escrever o arquivo Excel
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Bombeios')
         
-        # Move para o início do buffer
+        # Move o ponteiro do arquivo para o início
         output.seek(0)
-        
-        # Cria um download do arquivo
+
+        # Fornece o arquivo para download
         st.download_button(
             label="Baixar Excel",
             data=output,
             file_name="bombeios_agendados.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+    else:
+        st.warning("Não há dados para exportar.")
