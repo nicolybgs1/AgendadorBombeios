@@ -3,7 +3,6 @@
 
 # In[7]:
 
-pip install openpyxl
 import streamlit as st
 import pandas as pd
 import altair as alt
