@@ -47,7 +47,8 @@ if st.button("Adicionar Bombeio"):
             "Produto": product,
             "Cota": quota,
             "Início": start_datetime,
-            "Fim": end_datetime
+            "Fim": end_datetime,
+            "Duração": end_datetime - start_datetime
         })
         st.success("Bombeio adicionado com sucesso!")
     else:
