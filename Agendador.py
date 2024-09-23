@@ -74,12 +74,13 @@ if "data" in st.session_state:
     if df.empty:
         st.warning("Nenhum dado disponível para exibir o gráfico.")
     else:
-        # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
-        df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
-        df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
         
         # Criar gráfico de Gantt usando Altair (com 'Início' e 'Fim' como texto)
         st.subheader("Gráfico Gantt de Bombeios")
+
+        # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
+        df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
+        df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
 
         chart = alt.Chart(df).mark_bar().encode(
             x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),  # Usando como ordinal (texto)
