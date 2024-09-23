@@ -71,23 +71,21 @@ if "data" in st.session_state:
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
 
-    if df.empty:
-        st.warning("Nenhum dado disponível para exibir o gráfico.")
-    else:
-        # Criar gráfico de Gantt usando Altair (com 'Início_Texto' e 'Fim_Texto')
-        st.subheader("Gráfico Gantt de Bombeios")
 
-        chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início_Texto:T', axis=alt.Axis(format='%H:%M')),  # Usando texto no gráfico
-            x2='Fim_Texto:T',  # Usando texto no gráfico
-            y='Companhia:N',
-            color='Produto:N',
-            tooltip=['Companhia', 'Produto', 'Cota', 'Início_Texto', 'Fim_Texto', 'Duração']
-        ).properties(
-            title='Gráfico Gantt'
-        )
-
-        st.altair_chart(chart, use_container_width=True)
+# Criar gráfico de Gantt usando Altair (com 'Início_Texto' e 'Fim_Texto')
+    st.subheader("Gráfico Gantt de Bombeios")
+    
+    chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X('Início_Texto:T', axis=alt.Axis(format='%H:%M')),  # Usando texto no gráfico
+        x2='Fim_Texto:T',  # Usando texto no gráfico
+        y='Companhia:N',
+        color='Produto:N',
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início_Texto', 'Fim_Texto', 'Duração']
+    ).properties(
+        title='Gráfico Gantt'
+    )
+    
+    st.altair_chart(chart, use_container_width=True)
 
 
 # In[4]:
