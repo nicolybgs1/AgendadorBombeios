@@ -70,10 +70,14 @@ if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
-
+    
     if df.empty:
         st.warning("Nenhum dado disponível para exibir o gráfico.")
-    else:
+    else: 
+       # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
+    df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
+
         # Criar gráfico de Gantt usando Altair (com 'Início' e 'Fim' como texto)
         st.subheader("Gráfico Gantt de Bombeios")
 
