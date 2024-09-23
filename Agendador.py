@@ -81,21 +81,20 @@ if "data" in st.session_state:
 
     st.altair_chart(chart, use_container_width=True)
 
-    # Função para converter DataFrame em um arquivo Excel
-    def to_excel(df):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Bombeios')
-        return output.getvalue()
+    # Botão para exportar os dados para Excel
+    if st.button("Exportar para Excel"):
+        # Salvar o DataFrame em um arquivo Excel
+        file_path = "bombeios_agendados.xlsx"
+        df.to_excel(file_path, index=False)
 
-    # Botão para exportar os dados para XLSX
-    excel = to_excel(df)
-    st.download_button(
-        label="Baixar dados como XLSX",
-        data=excel,
-        file_name='bombeios_agendados.xlsx',
-        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    )
+        # Fazer o download do arquivo
+        with open(file_path, "rb") as f:
+            st.download_button(
+                label="Baixar arquivo Excel",
+                data=f,
+                file_name="bombeios_agendados.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
 
 # In[4]:
