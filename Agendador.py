@@ -34,7 +34,7 @@ else:
         # Combinar a data de amanhã com as horas de início e fim
         tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 
-        # Converter as horas de texto para datetime
+        # Converter as horas de texto para datetime apenas para calcular a diferença
         try:
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + end_time)
@@ -49,12 +49,16 @@ else:
 
         # Adicionar ao estado da sessão apenas se as datas forem válidas
         if pd.notna(start_datetime) and pd.notna(end_datetime):
+            # Voltar para formato string para exibição
+            start_time_str = start_datetime.strftime("%H:%M")
+            end_time_str = end_datetime.strftime("%H:%M")
+
             st.session_state.data.append({
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
-                "Início": start_datetime,
-                "Fim": end_datetime,
+                "Início": start_time_str,  # Volta para string
+                "Fim": end_time_str,       # Volta para string
                 "Duração": duration
             })
             st.success("Bombeio adicionado com sucesso!")
@@ -67,22 +71,15 @@ if "data" in st.session_state:
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
 
-    # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
-    df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
-    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
-
-    # Remover linhas com valores nulos em 'Início' ou 'Fim'
-    df = df.dropna(subset=['Início', 'Fim'])
-
     if df.empty:
         st.warning("Nenhum dado disponível para exibir o gráfico.")
     else:
-        # Criar gráfico de Gantt usando Altair
+        # Criar gráfico de Gantt usando Altair (com 'Início' e 'Fim' como texto)
         st.subheader("Gráfico Gantt de Bombeios")
 
         chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-            x2='Fim:T',
+            x=alt.X('Início:O', axis=alt.Axis(title='Hora de Início')),  # Usando como ordinal (texto)
+            x2='Fim:O',  # Também como ordinal (texto)
             y='Companhia:N',
             color='Produto:N',
             tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
@@ -91,5 +88,6 @@ if "data" in st.session_state:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 # In[4]:
