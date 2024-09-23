@@ -65,6 +65,22 @@ if "data" in st.session_state:
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
 
+    # Função para converter DataFrame em um arquivo Excel
+    def to_excel(df):
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Bombeios')
+        return output.getvalue()
+
+    # Botão para exportar os dados para XLSX
+    excel = to_excel(df)
+    st.download_button(
+        label="Baixar dados como XLSX",
+        data=excel,
+        file_name='bombeios_agendados.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
     df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
