@@ -88,6 +88,14 @@ if "data" in st.session_state:
         file_path = "bombeios_agendados.xlsx"
         df.to_excel(file_path, index=False)
 
+        with open(file_path, "rb") as f:
+            st.download_button(
+                label="Baixar arquivo Excel",
+                data=f,
+                file_name="bombeios_agendados.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )     
+
 
 # In[4]:
 
