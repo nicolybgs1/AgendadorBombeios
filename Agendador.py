@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from io import BytesIO
+import openpyxl
 
 # Título da página
 st.title("Agendador de Bombeios")
