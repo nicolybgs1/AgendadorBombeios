@@ -78,8 +78,8 @@ if "data" in st.session_state:
         st.subheader("Gráfico Gantt de Bombeios")
 
         chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início_Texto:O', axis=alt.Axis(title='Hora de Início')),  # Usando texto no gráfico
-            x2='Fim_Texto:O',  # Usando texto no gráfico
+            x=alt.X('Início_Texto:T', axis=alt.Axis(title='Hora de Início')),  # Usando texto no gráfico
+            x2='Fim_Texto:T',  # Usando texto no gráfico
             y='Companhia:N',
             color='Produto:N',
             tooltip=['Companhia', 'Produto', 'Cota', 'Início_Texto', 'Fim_Texto', 'Duração']
