@@ -59,8 +59,6 @@ else:
                 "Cota": quota,
                 "Início_Texto": start_time_str,  # Para exibição no gráfico
                 "Fim_Texto": end_time_str,       # Para exibição no gráfico
-                "Início_Datetime": start_datetime,  # Para cálculo de duração
-                "Fim_Datetime": end_datetime,       # Para cálculo de duração
                 "Duração": duration
             })
             st.success("Bombeio adicionado com sucesso!")
