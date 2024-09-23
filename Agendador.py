@@ -18,7 +18,7 @@ st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
 # Inputs para coletar os dados
 company = st.text_input("Companhia")
 product = st.text_input("Produto")
-quota = st.number_input("Cota", min_value=0.0, step=0.1)
+quota = st.number_input("Cota", min_value=0, step=1)
 start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 end_time = st.text_input("Hora de Fim (HH:MM)", "00:00")
 
