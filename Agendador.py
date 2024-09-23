@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[7]:
-
 import streamlit as st
 import pandas as pd
 import altair as alt
 from io import BytesIO
-import xlsxwriter
-
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -64,19 +60,19 @@ if "data" in st.session_state:
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
 
-    # Botão para exportar os dados para Excel (se usar xlsxwriter)
+    # Botão para exportar os dados para Excel
     if st.button("Exportar para Excel"):
-        output = "bombeios_agendados.xlsx"
+        output = BytesIO()  # Usar BytesIO para armazenar o arquivo em memória
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             df.to_excel(writer, sheet_name='Bombeios', index=False)
+        output.seek(0)  # Voltar para o início do objeto BytesIO
 
-        with open(output, "rb") as f:
-            st.download_button(
-                label="Baixar arquivo Excel",
-                data=f,
-                file_name="bombeios_agendados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        st.download_button(
+            label="Baixar arquivo Excel",
+            data=output,
+            file_name="bombeios_agendados.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
     
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
@@ -96,8 +92,3 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
-
-
-# In[4]:
-
