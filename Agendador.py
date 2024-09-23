@@ -37,7 +37,7 @@ if st.button("Adicionar Bombeio"):
 
         # Cálculo e formatação da duração como HH:MM diretamente
         Duração = end_datetime - start_datetime
-        Duração_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
+        Duração_str = f"{Duração.components.hours:02}:{Duração.components.minutes:02}"
         
     except ValueError:
         st.error("Formato de hora inválido. Use HH:MM.")
@@ -53,7 +53,7 @@ if st.button("Adicionar Bombeio"):
             "Cota": quota,
             "Início": start_datetime,
             "Fim": end_datetime,
-            "Duração": Duração
+            "Duração": Duração_str
         })
         st.success("Bombeio adicionado com sucesso!")
     else:
