@@ -59,20 +59,6 @@ if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
-
-# Botão para exportar os dados para Excel
-if st.button("Exportar para Excel"):
-    output = "bombeios_agendados.xlsx"
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, sheet_name='Bombeios', index=False)
-
-    with open(output, "rb") as f:
-        st.download_button(
-            label="Baixar arquivo Excel",
-            data=f,
-            file_name="bombeios_agendados.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
         
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
