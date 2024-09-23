@@ -34,18 +34,10 @@ if st.button("Adicionar Bombeio"):
     try:
         start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
         end_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + end_time)
-
-        # Calcular a duração
-        duration = end_datetime - start_datetime
-
-        # Formatar a duração como HH:MM
-        duration_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
-
     except ValueError:
         st.error("Formato de hora inválido. Use HH:MM.")
         start_datetime = pd.NaT
         end_datetime = pd.NaT
-        duration_str = None
 
     # Adicionar ao estado da sessão apenas se as datas forem válidas
     if pd.notna(start_datetime) and pd.notna(end_datetime):
@@ -55,7 +47,7 @@ if st.button("Adicionar Bombeio"):
             "Cota": quota,
             "Início": start_datetime,
             "Fim": end_datetime,
-            "Duração": duration_str  # Adicionar a duração formatada
+            "Duração": end_datetime - start_datetime
         })
         st.success("Bombeio adicionado com sucesso!")
     else:
@@ -79,13 +71,12 @@ if "data" in st.session_state:
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']  # Mostrar duração no tooltip
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim']
     ).properties(
         title='Gráfico Gantt'
     )
 
     st.altair_chart(chart, use_container_width=True)
-
 
 
 # In[4]:
