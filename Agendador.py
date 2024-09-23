@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from io import BytesIO
+import xlsxwriter
 
 
 # Título da página
@@ -82,19 +83,24 @@ if "data" in st.session_state:
 
     st.altair_chart(chart, use_container_width=True)
 
-    # Botão para exportar os dados para Excel
-    if st.button("Exportar para Excel"):
-        # Salvar o DataFrame em um arquivo Excel
-        file_path = "bombeios_agendados.xlsx"
-        df.to_excel(file_path, index=False)
+# Função para exportar o DataFrame para Excel
+def to_excel(df):
+    output = "bombeios_agendados.xlsx"
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Bombeios', index=False)
+    return output
 
-        with open(file_path, "rb") as f:
-            st.download_button(
-                label="Baixar arquivo Excel",
-                data=f,
-                file_name="bombeios_agendados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )     
+# Botão para exportar os dados para Excel
+if st.button("Exportar para Excel"):
+    file_path = to_excel(df)
+
+    with open(file_path, "rb") as f:
+        st.download_button(
+            label="Baixar arquivo Excel",
+            data=f,
+            file_name="bombeios_agendados.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 
 # In[4]:
