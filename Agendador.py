@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[7]:
-
-
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -57,11 +54,16 @@ if st.button("Adicionar Bombeio"):
 if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
-    st.write(df)
 
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
     df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
+
+    # Calcular a duração do bombeio (diferença entre Fim e Início)
+    df['Duração'] = df['Fim'] - df['Início']
+
+    # Exibir os dados com a coluna de duração
+    st.write(df)
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
@@ -71,12 +73,13 @@ if "data" in st.session_state:
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim']
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
     ).properties(
         title='Gráfico Gantt'
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
 
 
