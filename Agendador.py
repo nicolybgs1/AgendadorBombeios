@@ -64,6 +64,20 @@ if "data" in st.session_state:
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
 
+    # Botão para exportar os dados para Excel (se usar xlsxwriter)
+    if st.button("Exportar para Excel"):
+        output = "bombeios_agendados.xlsx"
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Bombeios', index=False)
+
+        with open(output, "rb") as f:
+            st.download_button(
+                label="Baixar arquivo Excel",
+                data=f,
+                file_name="bombeios_agendados.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+    
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
     df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
@@ -83,18 +97,6 @@ if "data" in st.session_state:
 
     st.altair_chart(chart, use_container_width=True)
 
-
-# Botão para exportar os dados para Excel
-if st.button("Exportar para Excel"):
-    file_path = to_excel(df)
-
-    with open(file_path, "rb") as f:
-        st.download_button(
-            label="Baixar arquivo Excel",
-            data=f,
-            file_name="bombeios_agendados.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
 
 
 # In[4]:
