@@ -49,16 +49,18 @@ else:
 
         # Adicionar ao estado da sessão apenas se as datas forem válidas
         if pd.notna(start_datetime) and pd.notna(end_datetime):
-            # Voltar para formato string para exibição
-            start_time_str = start_datetime.strftime("%H:%M")
-            end_time_str = end_datetime.strftime("%H:%M")
+            # Armazenar os valores de `datetime` para cálculos e os valores de `string` para exibição
+            start_time_str = start_time  # Valor original em formato string
+            end_time_str = end_time      # Valor original em formato string
 
             st.session_state.data.append({
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
-                "Início": start_time_str,  # Volta para string
-                "Fim": end_time_str,       # Volta para string
+                "Início_Texto": start_time_str,  # Para exibição no gráfico
+                "Fim_Texto": end_time_str,       # Para exibição no gráfico
+                "Início_Datetime": start_datetime,  # Para cálculo de duração
+                "Fim_Datetime": end_datetime,       # Para cálculo de duração
                 "Duração": duration
             })
             st.success("Bombeio adicionado com sucesso!")
@@ -70,24 +72,19 @@ if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
     st.write(df)
-    
+
     if df.empty:
         st.warning("Nenhum dado disponível para exibir o gráfico.")
     else:
-        
-        # Criar gráfico de Gantt usando Altair (com 'Início' e 'Fim' como texto)
+        # Criar gráfico de Gantt usando Altair (com 'Início_Texto' e 'Fim_Texto')
         st.subheader("Gráfico Gantt de Bombeios")
 
-        # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
-        df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
-        df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
-
         chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),  # Usando como ordinal (texto)
-            x2='Fim:T',  # Também como ordinal (texto)
+            x=alt.X('Início_Texto:O', axis=alt.Axis(title='Hora de Início')),  # Usando texto no gráfico
+            x2='Fim_Texto:O',  # Usando texto no gráfico
             y='Companhia:N',
             color='Produto:N',
-            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início_Texto', 'Fim_Texto', 'Duração']
         ).properties(
             title='Gráfico Gantt'
         )
