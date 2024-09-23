@@ -34,10 +34,16 @@ if st.button("Adicionar Bombeio"):
     try:
         start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
         end_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + end_time)
+
+        # Cálculo e formatação da duração como HH:MM diretamente
+        Duração = end_datetime - start_datetime
+        Duração_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
+        
     except ValueError:
         st.error("Formato de hora inválido. Use HH:MM.")
         start_datetime = pd.NaT
         end_datetime = pd.NaT
+        Duração_str = None
 
     # Adicionar ao estado da sessão apenas se as datas forem válidas
     if pd.notna(start_datetime) and pd.notna(end_datetime):
@@ -47,7 +53,7 @@ if st.button("Adicionar Bombeio"):
             "Cota": quota,
             "Início": start_datetime,
             "Fim": end_datetime,
-            "Duração": end_datetime - start_datetime
+            "Duração": duration_str
         })
         st.success("Bombeio adicionado com sucesso!")
     else:
