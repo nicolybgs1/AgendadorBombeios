@@ -55,6 +55,9 @@ if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
 
+    # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
+    df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
 
     # Calcular a duração do bombeio (diferença entre Fim e Início)
     df['Duração'] = df['Fim'] - df['Início']
@@ -76,7 +79,6 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
 
 
 
