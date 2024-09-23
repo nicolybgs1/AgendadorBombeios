@@ -92,3 +92,9 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
+    ).properties(
+        title='Gráfico Gantt'
+    )
+
+    st.altair_chart(chart, use_container_width=True)
