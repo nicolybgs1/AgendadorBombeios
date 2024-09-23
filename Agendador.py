@@ -83,12 +83,6 @@ if "data" in st.session_state:
 
     st.altair_chart(chart, use_container_width=True)
 
-# Função para exportar o DataFrame para Excel
-def to_excel(df):
-    output = "bombeios_agendados.xlsx"
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, sheet_name='Bombeios', index=False)
-    return output
 
 # Botão para exportar os dados para Excel
 if st.button("Exportar para Excel"):
