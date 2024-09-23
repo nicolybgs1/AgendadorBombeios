@@ -59,26 +59,30 @@ if "data" in st.session_state:
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
     df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
 
-    # Calcular a duração do bombeio (diferença entre Fim e Início)
-    df['Duração'] = df['Fim'] - df['Início']
+    # Verificar se há valores nulos nas colunas de data
+    if df['Início'].isnull().any() or df['Fim'].isnull().any():
+        st.error("Erro: Existem dados com horários inválidos. Corrija antes de exibir o gráfico.")
+    else:
+        # Calcular a duração do bombeio (diferença entre Fim e Início)
+        df['Duração'] = df['Fim'] - df['Início']
 
-    # Exibir os dados com a coluna de duração
-    st.write(df)
+        # Exibir os dados com a coluna de duração
+        st.write(df)
 
-    # Criar gráfico de Gantt usando Altair
-    st.subheader("Gráfico Gantt de Bombeios")
+        # Criar gráfico de Gantt usando Altair
+        st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-        x2='Fim:T',
-        y='Companhia:N',
-        color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
-    ).properties(
-        title='Gráfico Gantt'
-    )
+        chart = alt.Chart(df).mark_bar().encode(
+            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+            x2='Fim:T',
+            y='Companhia:N',
+            color='Produto:N',
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        ).properties(
+            title='Gráfico Gantt'
+        )
 
-    st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, use_container_width=True)
 
 
 
