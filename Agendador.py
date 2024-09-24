@@ -53,25 +53,16 @@ if st.button("Adicionar Bombeio"):
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
-            # Verifica se o bombeio já existe e atualiza ou adiciona
-            existing = next((item for item in st.session_state.data if item['Companhia'] == company and item['Produto'] == product), None)
-            if existing:
-                # Atualiza os dados existentes
-                existing['Cota'] = quota
-                existing['Início'] = start_datetime
-                existing['Fim'] = end_datetime
-                existing['Duração'] = duration_str
-            else:
-                # Adiciona novo bombeio
-                st.session_state.data.append({
-                    "Companhia": company,
-                    "Produto": product,
-                    "Cota": quota,
-                    "Início": start_datetime,
-                    "Fim": end_datetime,
-                    "Duração": duration_str
-                })
-            st.success("Bombeio adicionado/atualizado com sucesso!")
+            # Adiciona novo bombeio
+            st.session_state.data.append({
+                "Companhia": company,
+                "Produto": product,
+                "Cota": quota,
+                "Início": start_datetime,
+                "Fim": end_datetime,
+                "Duração": duration_str
+            })
+            st.success("Bombeio adicionado com sucesso!")
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
@@ -90,28 +81,26 @@ if st.session_state.data:
     for index, row in edited_df.iterrows():
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
         try:
-            # Pega a string da hora de início e calcula o novo horário de fim
+            # Verifica a hora de início
             start_datetime = pd.to_datetime(row['Início'])
-            # Verifica se o valor está correto
-            if isinstance(start_datetime, pd.Timestamp):
-                if flow_rate:
-                    end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-                    # Atualiza as colunas 'Fim' e 'Duração' na edição
-                    recalculated_data.append({
-                        "Companhia": row['Companhia'],
-                        "Produto": row['Produto'],
-                        "Cota": row['Cota'],
-                        "Início": start_datetime,
-                        "Fim": end_datetime,
-                        "Duração": duration_str
-                    })
-                else:
-                    recalculated_data.append(row.to_dict())  # Mantém os dados se o fluxo não for válido
+            if flow_rate:
+                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
+
+                # Atualiza as colunas 'Fim' e 'Duração' na edição
+                recalculated_data.append({
+                    "Companhia": row['Companhia'],
+                    "Produto": row['Produto'],
+                    "Cota": row['Cota'],
+                    "Início": start_datetime,
+                    "Fim": end_datetime,
+                    "Duração": duration_str
+                })
             else:
-                recalculated_data.append(row.to_dict())  # Mantém os dados se o timestamp não for válido
+                recalculated_data.append(row.to_dict())  # Mantém os dados se o fluxo não for válido
         except Exception as e:
             st.error(f"Erro ao processar a hora de início: {e}")
+            recalculated_data.append(row.to_dict())  # Mantém os dados se houver erro
 
     # Atualiza o estado da sessão com os dados recalculados
     st.session_state.data = recalculated_data
@@ -130,5 +119,6 @@ if st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
 
