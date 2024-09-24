@@ -86,20 +86,25 @@ if "data" in st.session_state:
     # Atualiza o DataFrame com os dados editados
     for index, row in edited_df.iterrows():
         # Recalcula o fim e a duração se a hora de início for editada
-        if pd.notna(row['Início']):
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
-            flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
-            if flow_rate:
-                duration_hours = row['Cota'] / flow_rate  # Duração em horas
-                end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-                duration_str = f"{duration_hours:.0f}:00"  # Arredonda para horas
-            else:
-                end_datetime = pd.NaT
-                duration_str = "00:00"
+        if pd.notna(row['Início']) and isinstance(row['Início'], str):
+            try:
+                start_time = row['Início']  # Pega a string da hora de início
+                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+                
+                flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
+                if flow_rate:
+                    duration_hours = row['Cota'] / flow_rate  # Duração em horas
+                    end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+                    duration_str = f"{duration_hours:.0f}:00"  # Arredonda para horas
+                else:
+                    end_datetime = pd.NaT
+                    duration_str = "00:00"
 
-            # Atualiza as colunas 'Fim' e 'Duração'
-            edited_df.at[index, 'Fim'] = end_datetime
-            edited_df.at[index, 'Duração'] = duration_str
+                # Atualiza as colunas 'Fim' e 'Duração'
+                edited_df.at[index, 'Fim'] = end_datetime
+                edited_df.at[index, 'Duração'] = duration_str
+            except Exception as e:
+                st.error(f"Erro ao processar a hora de início: {e}")
 
     # Atualiza o estado da sessão com os dados editados
     st.session_state.data = edited_df.to_dict(orient="records")
@@ -118,3 +123,4 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
