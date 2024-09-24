@@ -93,27 +93,24 @@ if st.button("Adicionar Bombeio"):
 
 # Exibir os dados adicionados
 if not st.session_state.data.empty:
-    df = st.session_state.data
     st.subheader("Dados de Bombeios Agendados")
+    df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
 
-    # Permitir edição dos dados
-    edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
-
-    # Adiciona botão de exclusão ao lado de cada linha
-    for index, row in edited_df.iterrows():
+    # Cria colunas para os dados e os botões
+    for index, row in df.iterrows():
         cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
         with cols[0]:
-            st.write(row.to_frame().T)  # Exibe a linha
+            st.write(row.to_frame().T)  # Exibe a linha do DataFrame
         with cols[1]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
                 save_data(st.session_state.data)  # Salva os dados no CSV
-                st.success(f"Linha {index + 1} removida com sucesso!")
+                st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
 
     # Recalcular dados após edição
     recalculated_data = []
-    for index, row in edited_df.iterrows():
+    for index, row in df.iterrows():
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
         try:
             # Converte a hora de início para datetime
@@ -164,3 +161,4 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
+
