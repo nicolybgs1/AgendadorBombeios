@@ -98,13 +98,15 @@ if not st.session_state.data.empty:
         
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
+
+                # Inputs para edição
                 edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
                 edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
                 edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
 
+                # Salvar alterações
                 if st.button("Salvar alterações", key=f"save_{index}"):
-                    # Atualiza os dados no DataFrame
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
                         try:
@@ -149,5 +151,3 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
-
