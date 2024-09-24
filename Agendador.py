@@ -50,7 +50,6 @@ if st.button("Adicionar Bombeio"):
     
     if flow_rate:
         try:
-            # Aqui, a hora de início deve ser convertida corretamente
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
@@ -93,23 +92,24 @@ if st.session_state.data:
         try:
             # Pega a string da hora de início e calcula o novo horário de fim
             start_datetime = pd.to_datetime(row['Início'])
-            if pd.isna(start_datetime):  # Se o valor for NaT
-                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'].strftime("%H:%M"))
+            # Verifica se o valor está correto
+            if isinstance(start_datetime, pd.Timestamp):
+                if flow_rate:
+                    end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-            if flow_rate:
-                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
-
-                # Atualiza as colunas 'Fim' e 'Duração' na edição
-                recalculated_data.append({
-                    "Companhia": row['Companhia'],
-                    "Produto": row['Produto'],
-                    "Cota": row['Cota'],
-                    "Início": start_datetime,
-                    "Fim": end_datetime,
-                    "Duração": duration_str
-                })
+                    # Atualiza as colunas 'Fim' e 'Duração' na edição
+                    recalculated_data.append({
+                        "Companhia": row['Companhia'],
+                        "Produto": row['Produto'],
+                        "Cota": row['Cota'],
+                        "Início": start_datetime,
+                        "Fim": end_datetime,
+                        "Duração": duration_str
+                    })
+                else:
+                    recalculated_data.append(row.to_dict())  # Mantém os dados se o fluxo não for válido
             else:
-                recalculated_data.append(row.to_dict())  # Mantém os dados se o fluxo não for válido
+                recalculated_data.append(row.to_dict())  # Mantém os dados se o timestamp não for válido
         except Exception as e:
             st.error(f"Erro ao processar a hora de início: {e}")
 
