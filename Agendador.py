@@ -68,16 +68,16 @@ if st.button("Adicionar Bombeio"):
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
-            # Adiciona novo bombeio
-            new_bomb = {
+            # Adiciona novo bombeio usando pd.concat
+            new_bomb = pd.DataFrame([{
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
                 "Início": start_datetime,
                 "Fim": end_datetime,
                 "Duração": duration_str
-            }
-            st.session_state.data = st.session_state.data.append(new_bomb, ignore_index=True)
+            }])
+            st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
             save_data(st.session_state.data)  # Salva os dados no CSV
             st.success("Bombeio adicionado com sucesso!")
         except ValueError:
@@ -146,5 +146,4 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
-
 
