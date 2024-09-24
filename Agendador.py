@@ -80,12 +80,17 @@ if st.button("Adicionar Bombeio"):
     else:
         st.error("Erro ao adicionar o bombeio.")
 
-# Exibir os dados adicionados
+# Exibir os dados adicionados e permitir edição
 if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
-    st.subheader("Dados de Bombeios Agendados")
-    st.write(df)
-        
+
+    # Usar data editor para permitir edição de dados
+    st.subheader("Dados de Bombeios Agendados (Editáveis)")
+    edited_df = st.data_editor(df, use_container_width=True)
+
+    # Atualizar o estado com o DataFrame editado
+    st.session_state.data = edited_df.to_dict('records')
+
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
     df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
