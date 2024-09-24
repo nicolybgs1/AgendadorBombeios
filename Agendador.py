@@ -140,6 +140,7 @@ if not st.session_state.data.empty:
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
 
+
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
