@@ -16,6 +16,7 @@ def load_data():
 # Função para salvar dados no CSV
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
+    st.success("Dados salvos com sucesso no CSV!")  # Mensagem de sucesso
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
@@ -42,10 +43,7 @@ def get_flow_rate(product, company):
     if product == "GAS":
         return 500
     elif product == "S10":
-        if company in ["POOL", "VIBRA"]:
-            return 1200
-        else:
-            return 600
+        return 1200 if company in ["POOL", "VIBRA"] else 600
     elif product == "S500":
         return 560
     elif product == "QAV":
@@ -62,7 +60,7 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Cálculo inicial de fim e duração
+# Adicionando novo bombeio
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
     
@@ -126,7 +124,14 @@ if not st.session_state.data.empty:
 
                             # Salvar no CSV
                             save_data(st.session_state.data)
-                            st.success("Alterações salvas com sucesso!")
+
+                            # Verificar se as alterações foram salvas
+                            loaded_data = load_data()  # Carregar os dados novamente para verificar
+                            if not loaded_data.equals(st.session_state.data):
+                                st.error("As alterações não foram salvas corretamente.")
+                            else:
+                                st.success("Alterações salvas com sucesso!")
+
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -158,4 +163,5 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
 
