@@ -1,6 +1,21 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import os
+
+# Nome do arquivo CSV para armazenamento
+DATA_FILE = "bombeios_agendados.csv"
+
+# Função para carregar dados do CSV
+def load_data():
+    if os.path.exists(DATA_FILE):
+        return pd.read_csv(DATA_FILE, parse_dates=["Início", "Fim"])
+    else:
+        return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
+
+# Função para salvar dados no CSV
+def save_data(df):
+    df.to_csv(DATA_FILE, index=False)
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -40,9 +55,9 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Inicializa a lista de dados na sessão, se ainda não existir
+# Carregar dados existentes
 if "data" not in st.session_state:
-    st.session_state.data = []
+    st.session_state.data = load_data()
 
 # Cálculo inicial de fim e duração
 if st.button("Adicionar Bombeio"):
@@ -54,14 +69,16 @@ if st.button("Adicionar Bombeio"):
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             # Adiciona novo bombeio
-            st.session_state.data.append({
+            new_bomb = {
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
                 "Início": start_datetime,
                 "Fim": end_datetime,
                 "Duração": duration_str
-            })
+            }
+            st.session_state.data = st.session_state.data.append(new_bomb, ignore_index=True)
+            save_data(st.session_state.data)  # Salva os dados no CSV
             st.success("Bombeio adicionado com sucesso!")
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -69,8 +86,8 @@ if st.button("Adicionar Bombeio"):
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
 # Exibir os dados adicionados
-if st.session_state.data:
-    df = pd.DataFrame(st.session_state.data)
+if not st.session_state.data.empty:
+    df = st.session_state.data
     st.subheader("Dados de Bombeios Agendados")
 
     # Permitir edição dos dados
@@ -105,13 +122,14 @@ if st.session_state.data:
             recalculated_data.append(row.to_dict())  # Mantém os dados se houver erro
 
     # Atualiza o estado da sessão com os dados recalculados
-    st.session_state.data = recalculated_data
+    st.session_state.data = pd.DataFrame(recalculated_data)
+    save_data(st.session_state.data)  # Salva os dados recalculados no CSV
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
     # Converte o DataFrame recalculado em gráfico
-    chart_data = pd.DataFrame(st.session_state.data)
+    chart_data = st.session_state.data
     
     chart = alt.Chart(chart_data).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
