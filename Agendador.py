@@ -18,7 +18,43 @@ company = st.text_input("Companhia")
 product = st.text_input("Produto")
 quota = st.number_input("Cota", min_value=0, step=1)
 start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
-end_time = st.text_input("Hora de Fim (HH:MM)", "00:00")
+
+# Função para calcular a taxa de bombeio
+def get_flow_rate(product, company):
+    if product == "GAS":
+        return 500
+    elif product == "S10":
+        if company in ["POOL", "VIBRA"]:
+            return 1200
+        else:
+            return 600
+    elif product == "S500":
+        return 560
+    elif product == "QAV":
+        return 240
+    elif product == "OC1A":
+        return 300
+    else:
+        return None  # Caso o produto não esteja definido
+
+# Calcular a hora de fim com base na cota e taxa de bombeio
+flow_rate = get_flow_rate(product, company)
+if flow_rate:
+    try:
+        start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+        duration_hours = quota / flow_rate  # Duração em horas
+        end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+
+        # Formatar a hora de fim
+        end_time = end_datetime.strftime("%H:%M")
+        st.text(f"Hora de Fim Calculada: {end_time}")
+    except ValueError:
+        st.error("Formato de hora de início inválido. Use HH:MM.")
+        start_datetime = pd.NaT
+        end_datetime = pd.NaT
+        end_time = None
+else:
+    st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
 # Botão para adicionar a entrada de dados
 if st.button("Adicionar Bombeio"):
@@ -27,21 +63,11 @@ if st.button("Adicionar Bombeio"):
 
     tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 
-    try:
-        start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
-        end_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + end_time)
-
+    if pd.notna(start_datetime) and pd.notna(end_datetime):
         # Cálculo e formatação da duração como HH:MM
         duration = end_datetime - start_datetime
         duration_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
-        
-    except ValueError:
-        st.error("Formato de hora inválido. Use HH:MM.")
-        start_datetime = pd.NaT
-        end_datetime = pd.NaT
-        duration_str = None
 
-    if pd.notna(start_datetime) and pd.notna(end_datetime):
         st.session_state.data.append({
             "Companhia": company,
             "Produto": product,
@@ -78,4 +104,5 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
     
