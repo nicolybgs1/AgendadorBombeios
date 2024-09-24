@@ -62,6 +62,10 @@ with st.form(key='add_bomb_form'):
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
     st.dataframe(st.session_state.data, use_container_width=True)
+    
+    # Verificar os tipos de dados
+    st.write("Tipos de Dados:")
+    st.write(st.session_state.data.dtypes)
 
     # Selecionar linha para editar
     selected_index = st.selectbox("Selecione o índice da linha para editar", st.session_state.data.index)
@@ -95,19 +99,25 @@ if not st.session_state.data.empty:
     st.subheader("Gráfico Gantt de Bombeios")
 
     # Converte o DataFrame recalculado em gráfico
-    chart_data = st.session_state.data
-    
-    chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-        x2='Fim:T',
-        y=alt.Y('Companhia:N', sort='-x'),
-        color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
-    ).properties(
-        title='Gráfico Gantt'
-    )
+    chart_data = st.session_state.data.copy()  # Copia o DataFrame para evitar manipulação direta
 
-    st.altair_chart(chart, use_container_width=True)
+    if not chart_data.empty:
+        chart = alt.Chart(chart_data).mark_bar().encode(
+            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+            x2='Fim:T',
+            y=alt.Y('Companhia:N', sort='-x'),
+            color='Produto:N',
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
+        ).properties(
+            title='Gráfico Gantt'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+    else:
+        st.write("Nenhum dado para mostrar no gráfico.")
+
+else:
+    st.write("Nenhum bombeio agendado.")
 
 else:
     st.write("Nenhum bombeio agendado.")
