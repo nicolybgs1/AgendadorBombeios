@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 import os
 
 # Nome do arquivo CSV para armazenamento
@@ -23,41 +22,6 @@ st.set_page_config(layout="wide")
 # Título da página
 st.title("Agendador de Bombeios")
 
-# Exibir a data de amanhã no início da página
-tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
-st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
-
-# Inputs para coletar os dados
-company = st.text_input("Companhia")
-product = st.text_input("Produto")
-quota = st.number_input("Cota", min_value=0, step=1)
-start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
-
-# Função para calcular a taxa de bombeio
-def get_flow_rate(product, company):
-    if product == "GAS":
-        return 500
-    elif product == "S10":
-        if company in ["POOL", "VIBRA"]:
-            return 1200
-        else:
-            return 600
-    elif product == "S500":
-        return 560
-    elif product == "QAV":
-        return 240
-    elif product == "OC1A":
-        return 300
-    else:
-        return None  # Caso o produto não esteja definido
-
-# Função para calcular a hora de fim e duração
-def calculate_end_time(start_datetime, quota, flow_rate):
-    duration_hours = quota / flow_rate  # Duração em horas
-    end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-    duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
-    return end_datetime, duration_str
-
 # Inicializar o estado da sessão
 if "data" not in st.session_state:
     st.session_state.data = load_data()
@@ -66,102 +30,66 @@ if "data" not in st.session_state:
 if st.session_state.data is None or not isinstance(st.session_state.data, pd.DataFrame):
     st.session_state.data = pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
-# Cálculo inicial de fim e duração
-if st.button("Adicionar Bombeio"):
-    flow_rate = get_flow_rate(product, company)
-    
-    if flow_rate:
-        try:
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
-            end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
+# Formulário para adicionar um novo bombeio
+with st.form(key='add_bomb_form'):
+    company = st.text_input("Companhia")
+    product = st.text_input("Produto")
+    quota = st.number_input("Cota", min_value=0, step=1)
+    start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
+    submit_button = st.form_submit_button(label='Adicionar Bombeio')
 
-            # Cria novo DataFrame com os dados do bombeio
-            new_bomb = pd.DataFrame([{
+    # Adicionar Bombeio
+    if submit_button:
+        try:
+            start_datetime = pd.to_datetime(start_time, format='%H:%M')
+            end_datetime = start_datetime + pd.Timedelta(hours=1)  # Exemplo: 1 hora de duração
+            new_bomb = {
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
                 "Início": start_datetime,
                 "Fim": end_datetime,
-                "Duração": duration_str
-            }])
-            
-            # Adiciona novo bombeio usando pd.concat
-            st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
+                "Duração": "01:00"  # Exemplo de duração
+            }
+            st.session_state.data = st.session_state.data.append(new_bomb, ignore_index=True)
             save_data(st.session_state.data)  # Salva os dados no CSV
             st.success("Bombeio adicionado com sucesso!")
-        except ValueError:
-            st.error("Formato de hora de início inválido. Use HH:MM.")
-    else:
-        st.error("Produto ou Companhia inválidos. Verifique os valores.")
+        except Exception as e:
+            st.error(f"Ocorreu um erro: {e}")
 
-# Exibir os dados adicionados
+# Exibir os dados
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
-    df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
+    st.dataframe(st.session_state.data, use_container_width=True)
 
-    # Cria colunas para os dados e os botões
-    for index, row in df.iterrows():
-        cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
-        with cols[0]:
-            st.write(row.to_frame().T)  # Exibe a linha do DataFrame
-        with cols[1]:
-            if st.button(f"Remover", key=f"remove_{index}"):
-                st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
+    # Selecionar linha para editar
+    selected_index = st.selectbox("Selecione o índice da linha para editar", st.session_state.data.index)
+
+    # Formulário para editar o bombeio selecionado
+    with st.form(key='edit_bomb_form'):
+        edit_company = st.text_input("Companhia", value=st.session_state.data.at[selected_index, 'Companhia'])
+        edit_product = st.text_input("Produto", value=st.session_state.data.at[selected_index, 'Produto'])
+        edit_quota = st.number_input("Cota", min_value=0, step=1, value=st.session_state.data.at[selected_index, 'Cota'])
+        edit_start_time = st.text_input("Hora de Início (HH:MM)", value=st.session_state.data.at[selected_index, 'Início'].strftime('%H:%M'))
+        edit_submit_button = st.form_submit_button(label='Salvar Alterações')
+
+        # Salvar as alterações
+        if edit_submit_button:
+            try:
+                edit_start_datetime = pd.to_datetime(edit_start_time, format='%H:%M')
+                end_datetime = edit_start_datetime + pd.Timedelta(hours=1)  # Ajustar conforme necessário
+                st.session_state.data.at[selected_index, 'Companhia'] = edit_company
+                st.session_state.data.at[selected_index, 'Produto'] = edit_product
+                st.session_state.data.at[selected_index, 'Cota'] = edit_quota
+                st.session_state.data.at[selected_index, 'Início'] = edit_start_datetime
+                st.session_state.data.at[selected_index, 'Fim'] = end_datetime
+                st.session_state.data.at[selected_index, 'Duração'] = "01:00"  # Atualizar a duração conforme necessário
+
                 save_data(st.session_state.data)  # Salva os dados no CSV
-                st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                st.experimental_rerun()  # Atualiza a página para refletir a mudança
+                st.success("Bombeio atualizado com sucesso!")
+            except Exception as e:
+                st.error(f"Ocorreu um erro: {e}")
 
-    # Recalcular dados após edição
-    recalculated_data = []
-    for index, row in df.iterrows():
-        flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
-        try:
-            # Converte a hora de início para datetime
-            start_datetime = pd.to_datetime(row['Início'])
-
-            if flow_rate is not None:
-                # Recalcula hora de fim e duração
-                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
-
-                # Adiciona os dados recalculados
-                recalculated_data.append({
-                    "Companhia": row['Companhia'],
-                    "Produto": row['Produto'],
-                    "Cota": row['Cota'],
-                    "Início": start_datetime,
-                    "Fim": end_datetime,
-                    "Duração": duration_str
-                })
-            else:
-                # Mantém os dados se o fluxo não for válido
-                recalculated_data.append(row.to_dict())  
-        except Exception as e:
-            st.error(f"Erro ao processar a hora de início: {e}")
-            recalculated_data.append(row.to_dict())  # Mantém os dados se houver erro
-
-    # Atualiza o estado da sessão com os dados recalculados
-    st.session_state.data = pd.DataFrame(recalculated_data)
-    save_data(st.session_state.data)  # Salva os dados recalculados no CSV
-
-    # Criar gráfico de Gantt usando Altair
-    st.subheader("Gráfico Gantt de Bombeios")
-
-    # Converte o DataFrame recalculado em gráfico
-    chart_data = st.session_state.data
-    
-    chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-        x2='Fim:T',
-        y='Companhia:N',
-        color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
-    ).properties(
-        title='Gráfico Gantt'
-    )
-
-    st.altair_chart(chart, use_container_width=True)
-
-# Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
 
