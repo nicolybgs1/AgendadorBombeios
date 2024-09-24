@@ -124,8 +124,9 @@ if not st.session_state.data.empty:
 
                             # Salvar no CSV
                             save_data(st.session_state.data)
-                            st.success("Alterações salvas com sucesso!")
 
+                            # Atualizar a visualização
+                            st.success("Alterações salvas com sucesso!")
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -157,4 +158,3 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
