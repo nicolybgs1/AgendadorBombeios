@@ -187,7 +187,7 @@ if not st.session_state.data.empty:
     chart_data = st.session_state.data
     
     chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+        x='Início:T',
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
@@ -197,6 +197,8 @@ if not st.session_state.data.empty:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 else:
     st.warning("Nenhum bombeio agendado.")
+
 
