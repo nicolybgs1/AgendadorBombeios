@@ -98,9 +98,6 @@ if st.button("Adicionar Bombeio"):
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
 
-    # Exibir o DataFrame diretamente na interface
-    st.dataframe(st.session_state.data)
-
     # Cria colunas para os dados e os botões de edição e remoção
     for index, row in st.session_state.data.iterrows():
         cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
