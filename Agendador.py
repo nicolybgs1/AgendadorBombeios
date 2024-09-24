@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import streamlit as st
 import pandas as pd
 import altair as alt
-from io import BytesIO
+from datetime import datetime, timedelta
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -87,9 +84,9 @@ if "data" in st.session_state:
 
     # Utiliza o data_editor para permitir edição dos dados
     edited_df = st.data_editor(df, key="data_editor", column_config={
-        "Início": st.column_config.TimeInput(),
-        "Fim": st.column_config.TimeInput(),
-        "Duração": st.column_config.TextInput(),
+        "Início": st.column_config.TextInput(placeholder="HH:MM"),
+        "Fim": st.column_config.TextInput(placeholder="HH:MM", disabled=True),
+        "Duração": st.column_config.TextInput(disabled=True),
         "Cota": st.column_config.NumberInput()
     })
 
@@ -97,7 +94,7 @@ if "data" in st.session_state:
     for index, row in edited_df.iterrows():
         # Calcula a nova hora de fim e duração quando a hora de início é editada
         if pd.notna(row['Início']):
-            start_datetime = pd.to_datetime(row['Início'])
+            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
             flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
             if flow_rate:
                 duration_hours = row['Cota'] / flow_rate  # Duração em horas
@@ -134,4 +131,3 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
