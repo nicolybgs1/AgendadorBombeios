@@ -10,10 +10,10 @@ tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
 
 # Inputs para coletar os dados
-company = st.text_input("Companhia", on_change=lambda: update_data())
-product = st.text_input("Produto", on_change=lambda: update_data())
-quota = st.number_input("Cota", min_value=0, step=1, on_change=lambda: update_data())
-start_time = st.text_input("Hora de Início (HH:MM)", "00:00", on_change=lambda: update_data())
+company = st.text_input("Companhia")
+product = st.text_input("Produto")
+quota = st.number_input("Cota", min_value=0, step=1)
+start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
@@ -40,30 +40,30 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Função para atualizar os dados na sessão
-def update_data():
-    if "data" not in st.session_state:
-        st.session_state.data = []
-    flow_rate = get_flow_rate(product, company)
+# Inicializa a lista de dados na sessão
+if "data" not in st.session_state:
+    st.session_state.data = []
 
-    if flow_rate and quota > 0:
+# Cálculo inicial de fim e duração
+if st.button("Adicionar Bombeio"):
+    flow_rate = get_flow_rate(product, company)
+    
+    if flow_rate:
         try:
+            # Aqui, a hora de início deve ser convertida corretamente
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
-            # Atualiza ou adiciona os dados
-            for idx, item in enumerate(st.session_state.data):
-                if item['Companhia'] == company and item['Produto'] == product:
-                    st.session_state.data[idx] = {
-                        "Companhia": company,
-                        "Produto": product,
-                        "Cota": quota,
-                        "Início": start_datetime,
-                        "Fim": end_datetime,
-                        "Duração": duration_str
-                    }
-                    break
+            # Verifica se o bombeio já existe e atualiza ou adiciona
+            existing = next((item for item in st.session_state.data if item['Companhia'] == company and item['Produto'] == product), None)
+            if existing:
+                # Atualiza os dados existentes
+                existing['Cota'] = quota
+                existing['Início'] = start_datetime
+                existing['Fim'] = end_datetime
+                existing['Duração'] = duration_str
             else:
+                # Adiciona novo bombeio
                 st.session_state.data.append({
                     "Companhia": company,
                     "Produto": product,
@@ -72,18 +72,15 @@ def update_data():
                     "Fim": end_datetime,
                     "Duração": duration_str
                 })
-            st.success("Dados atualizados com sucesso!")
+            st.success("Bombeio adicionado/atualizado com sucesso!")
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
 # Exibir os dados adicionados
-if "data" in st.session_state and st.session_state.data:
+if st.session_state.data:
     df = pd.DataFrame(st.session_state.data)
-    df['Início'] = pd.to_datetime(df['Início'])  # Certifique-se de que 'Início' é do tipo datetime
-    df['Fim'] = pd.to_datetime(df['Fim'])  # Certifique-se de que 'Fim' é do tipo datetime
-
     st.subheader("Dados de Bombeios Agendados")
 
     # Permitir edição dos dados
@@ -106,5 +103,4 @@ if "data" in st.session_state and st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
 
