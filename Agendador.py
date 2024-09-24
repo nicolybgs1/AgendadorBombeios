@@ -40,7 +40,7 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Inicializa a lista de dados na sessão
+# Inicializa a lista de dados na sessão, se ainda não existir
 if "data" not in st.session_state:
     st.session_state.data = []
 
@@ -121,5 +121,3 @@ if st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
-
