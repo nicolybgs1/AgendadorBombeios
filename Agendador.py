@@ -81,23 +81,30 @@ def update_data():
 # Exibir os dados adicionados
 if "data" in st.session_state and st.session_state.data:
     df = pd.DataFrame(st.session_state.data)
+    df['Início'] = pd.to_datetime(df['Início'])  # Certifique-se de que 'Início' é do tipo datetime
+    df['Fim'] = pd.to_datetime(df['Fim'])  # Certifique-se de que 'Fim' é do tipo datetime
+
     st.subheader("Dados de Bombeios Agendados")
 
     # Permitir edição dos dados
     edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
+    # Atualizar dados após edição
+    st.session_state.data = edited_df.to_dict(orient='records')
+
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(df).mark_bar().encode(
+    chart = alt.Chart(edited_df).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
     ).properties(
         title='Gráfico Gantt'
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
