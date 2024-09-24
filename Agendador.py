@@ -158,3 +158,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
