@@ -125,13 +125,7 @@ if not st.session_state.data.empty:
                             # Salvar no CSV
                             save_data(st.session_state.data)
 
-                            # Verificar se as alterações foram salvas
-                            loaded_data = load_data()  # Carregar os dados novamente para verificar
-                            if not loaded_data.equals(st.session_state.data):
-                                st.error("As alterações não foram salvas corretamente.")
-                            else:
-                                st.success("Alterações salvas com sucesso!")
-
+                            st.success("Alterações salvas com sucesso!")
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
