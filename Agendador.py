@@ -99,43 +99,9 @@ if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
     df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
 
-    # Criar variáveis para edição
-    edit_index = st.session_state.get("edit_index", -1)
-
-    # Inputs de edição
-    if edit_index >= 0:
-        edit_row = df.iloc[edit_index]
-        st.write("Editando bombeio:")
-        company_edit = st.text_input("Companhia", value=edit_row["Companhia"])
-        product_edit = st.text_input("Produto", value=edit_row["Produto"])
-        quota_edit = st.number_input("Cota", value=edit_row["Cota"], min_value=0, step=1)
-        start_time_edit = st.text_input("Hora de Início (HH:MM)", value=edit_row["Início"].strftime("%H:%M"))
-
-        if st.button("Salvar Edição"):
-            flow_rate = get_flow_rate(product_edit, company_edit)
-            if flow_rate:
-                try:
-                    start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time_edit)
-                    end_datetime, duration_str = calculate_end_time(start_datetime, quota_edit, flow_rate)
-
-                    # Atualiza a linha editada
-                    st.session_state.data.at[edit_index, "Companhia"] = company_edit
-                    st.session_state.data.at[edit_index, "Produto"] = product_edit
-                    st.session_state.data.at[edit_index, "Cota"] = quota_edit
-                    st.session_state.data.at[edit_index, "Início"] = start_datetime
-                    st.session_state.data.at[edit_index, "Fim"] = end_datetime
-                    st.session_state.data.at[edit_index, "Duração"] = duration_str
-                    save_data(st.session_state.data)  # Salva os dados no CSV
-                    st.success("Bombeio atualizado com sucesso!")
-                    st.session_state.edit_index = -1  # Reseta o índice de edição
-                except ValueError:
-                    st.error("Formato de hora de início inválido. Use HH:MM.")
-            else:
-                st.error("Produto ou Companhia inválidos. Verifique os valores.")
-
     # Cria colunas para os dados e os botões
     for index, row in df.iterrows():
-        cols = st.columns([3, 1, 1])  # Ajuste a proporção conforme necessário
+        cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
         with cols[0]:
             st.write(row.to_frame().T)  # Exibe a linha do DataFrame
         with cols[1]:
@@ -144,9 +110,6 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
-        with cols[2]:
-            if st.button(f"Editar", key=f"edit_{index}"):
-                st.session_state.edit_index = index  # Define o índice da linha a ser editada
 
     # Recalcular dados após edição
     recalculated_data = []
@@ -187,18 +150,17 @@ if not st.session_state.data.empty:
     chart_data = st.session_state.data
     
     chart = alt.Chart(chart_data).mark_bar().encode(
-        x='Início:T',
+        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
         y='Companhia:N',
         color='Produto:N',
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
     ).properties(
-        width=800,
-        height=400
+        title='Gráfico Gantt'
     )
 
     st.altair_chart(chart, use_container_width=True)
 
+# Mensagem se não houver dados
 else:
-    st.warning("Nenhum bombeio agendado.")
-
-
+    st.write("Nenhum bombeio agendado.")
