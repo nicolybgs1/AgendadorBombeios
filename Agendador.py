@@ -130,7 +130,10 @@ if not st.session_state.data.empty:
 
                         # Salvar no CSV
                         save_data(st.session_state.data)
+
+                        # Exibir mensagem de sucesso e recarregar os dados
                         st.success("Alterações salvas com sucesso!")
+                        st.session_state.data = load_data()  # Recarrega os dados do CSV
                         st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
         with cols[2]:
@@ -139,7 +142,6 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
-
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
@@ -159,5 +161,3 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
-
