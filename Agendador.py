@@ -82,7 +82,7 @@ if st.session_state.data:
         try:
             # Pega a string da hora de início e calcula o novo horário de fim
             start_time = row['Início']
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M"))
 
             if flow_rate:
                 end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
@@ -116,5 +116,4 @@ if st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
 
