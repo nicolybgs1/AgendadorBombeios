@@ -120,5 +120,16 @@ if st.session_state.data:
 
     st.altair_chart(chart, use_container_width=True)
 
+# Atualiza o DataFrame quando a edição é feita
+if edited_df is not None:
+    for index, row in edited_df.iterrows():
+        if "Início" in row:
+            start_datetime = pd.to_datetime(row["Início"])
+            flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
+            if flow_rate is not None:
+                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
+                # Atualiza o DataFrame
+                st.session_state.data[index]["Fim"] = end_datetime
+                st.session_state.data[index]["Duração"] = duration_str
 
 
