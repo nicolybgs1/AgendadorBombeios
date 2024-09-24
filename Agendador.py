@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import altair as alt
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -90,6 +91,23 @@ if not st.session_state.data.empty:
             except Exception as e:
                 st.error(f"Ocorreu um erro: {e}")
 
+    # Criar gráfico Gantt usando Altair
+    st.subheader("Gráfico Gantt de Bombeios")
+
+    # Converte o DataFrame recalculado em gráfico
+    chart_data = st.session_state.data
+    
+    chart = alt.Chart(chart_data).mark_bar().encode(
+        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+        x2='Fim:T',
+        y=alt.Y('Companhia:N', sort='-x'),
+        color='Produto:N',
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
+    ).properties(
+        title='Gráfico Gantt'
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
 else:
     st.write("Nenhum bombeio agendado.")
-
