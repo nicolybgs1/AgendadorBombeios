@@ -117,12 +117,17 @@ if not st.session_state.data.empty:
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
                             # Aplicar alterações
-                            st.session_state.data.at[index, 'Companhia'] = edited_company
-                            st.session_state.data.at[index, 'Produto'] = edited_product
-                            st.session_state.data.at[index, 'Cota'] = edited_quota
-                            st.session_state.data.at[index, 'Início'] = start_datetime
-                            st.session_state.data.at[index, 'Fim'] = end_datetime
-                            st.session_state.data.at[index, 'Duração'] = duration_str
+                            edited_row = {
+                                'Companhia': edited_company,
+                                'Produto': edited_product,
+                                'Cota': edited_quota,
+                                'Início': start_datetime,
+                                'Fim': end_datetime,
+                                'Duração': duration_str
+                            }
+                            
+                            # Atualiza a linha no DataFrame
+                            st.session_state.data.loc[index] = edited_row
 
                             # Salvar no CSV
                             save_data(st.session_state.data)
@@ -158,3 +163,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
