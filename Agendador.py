@@ -110,23 +110,28 @@ if not st.session_state.data.empty:
 
                 if st.button("Salvar alterações", key=f"save_{index}"):
                     # Atualiza os dados no DataFrame
-                    st.session_state.data.at[index, 'Companhia'] = edited_company
-                    st.session_state.data.at[index, 'Produto'] = edited_product
-                    st.session_state.data.at[index, 'Cota'] = edited_quota
-                    st.session_state.data.at[index, 'Início'] = pd.to_datetime(
-                        tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
-                    
-                    # Recalcula o fim e a duração
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
-                        end_datetime, duration_str = calculate_end_time(st.session_state.data.at[index, 'Início'], edited_quota, flow_rate)
-                        st.session_state.data.at[index, 'Fim'] = end_datetime
-                        st.session_state.data.at[index, 'Duração'] = duration_str
+                        try:
+                            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
+                            end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
-                    # Salvar no CSV
-                    save_data(st.session_state.data)
-                    st.success("Alterações salvas com sucesso!")
-                    st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+                            # Aplicar alterações
+                            st.session_state.data.at[index, 'Companhia'] = edited_company
+                            st.session_state.data.at[index, 'Produto'] = edited_product
+                            st.session_state.data.at[index, 'Cota'] = edited_quota
+                            st.session_state.data.at[index, 'Início'] = start_datetime
+                            st.session_state.data.at[index, 'Fim'] = end_datetime
+                            st.session_state.data.at[index, 'Duração'] = duration_str
+
+                            # Salvar no CSV
+                            save_data(st.session_state.data)
+                            st.success("Alterações salvas com sucesso!")
+                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+                        except ValueError:
+                            st.error("Formato de hora de início inválido. Use HH:MM.")
+                    else:
+                        st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
