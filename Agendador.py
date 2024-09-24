@@ -44,11 +44,13 @@ def calculate_end_time_and_duration(row):
         try:
             # Garantir que 'Início' seja uma string válida no formato HH:MM
             if isinstance(row['Início'], str):
+                # Criar datetime de início com a data de amanhã
                 start_datetime = pd.to_datetime(row['Início'], format="%Y-%m-%d %H:%M")
                 duration_hours = row['Cota'] / flow_rate  # Duração em horas
                 end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-                row['Fim'] = end_datetime.strftime("%H:%M")
                 
+                # Atualiza as colunas 'Fim' e 'Duração'
+                row['Fim'] = end_datetime.strftime("%H:%M")  # Hora de fim
                 duration = end_datetime - start_datetime
                 row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
             else:
@@ -90,7 +92,7 @@ if "data" in st.session_state:
 
     # Garantir que as colunas 'Início' e 'Fim' estejam no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
-    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce', format="%Y-%m-%d %H:%M")
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce', format="%H:%M")
 
     # Exibir o editor de dados
     st.subheader("Dados de Bombeios Agendados (Editáveis)")
