@@ -76,7 +76,7 @@ if st.session_state.data:
     # Permitir edição dos dados
     edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
-    # Atualizar dados após edição
+    # Recalcular dados após edição
     recalculated_data = []
     for index, row in edited_df.iterrows():
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
@@ -110,7 +110,10 @@ if st.session_state.data:
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(pd.DataFrame(st.session_state.data)).mark_bar().encode(
+    # Converte o DataFrame recalculado em gráfico
+    chart_data = pd.DataFrame(st.session_state.data)
+    
+    chart = alt.Chart(chart_data).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
         y='Companhia:N',
@@ -126,5 +129,4 @@ if st.session_state.data:
 else:
     st.write("Nenhum bombeio agendado.")
 
-    st.altair_chart(chart, use_container_width=True)
 
