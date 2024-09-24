@@ -50,7 +50,7 @@ def calculate_end_time_and_duration(row):
                 end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
                 
                 # Atualiza as colunas 'Fim' e 'Duração'
-                row['Fim'] = end_datetime.strftime("%H:%M")  # Apenas Hora de Fim
+                row['Fim'] = end_datetime.strftime("%Y-%m-%d %H:%M")  # Hora de Fim com Data
                 duration = end_datetime - start_datetime
                 row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
             else:
@@ -92,6 +92,7 @@ if "data" in st.session_state:
 
     # Garantir que as colunas 'Início' e 'Fim' estejam no formato datetime
     df['Início'] = pd.to_datetime(df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce', format="%Y-%m-%d %H:%M")
 
     # Exibir o editor de dados
     st.subheader("Dados de Bombeios Agendados (Editáveis)")
@@ -106,7 +107,7 @@ if "data" in st.session_state:
         st.subheader("Gráfico Gantt de Bombeios")
 
         chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M', title="Hora de Início")),
+            x=alt.X('Início:T', axis=alt.Axis(format='%Y-%m-%d %H:%M', title="Hora de Início")),
             x2='Fim:T',
             y=alt.Y('Companhia:N', title="Companhia"),
             color='Produto:N',
@@ -118,4 +119,3 @@ if "data" in st.session_state:
         st.altair_chart(chart, use_container_width=True)
     else:
         st.warning("Sem dados válidos para o gráfico.")
-
