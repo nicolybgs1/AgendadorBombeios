@@ -121,3 +121,4 @@ if st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
