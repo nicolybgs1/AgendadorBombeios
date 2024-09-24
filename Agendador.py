@@ -108,6 +108,8 @@ if st.session_state.data:
                     "Fim": end_datetime,
                     "Duração": duration_str
                 })
+            else:
+                recalculated_data.append(row.to_dict())  # Mantém os dados se o fluxo não for válido
         except Exception as e:
             st.error(f"Erro ao processar a hora de início: {e}")
 
