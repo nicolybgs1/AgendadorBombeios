@@ -118,6 +118,3 @@ if not st.session_state.data.empty:
 
 else:
     st.write("Nenhum bombeio agendado.")
-
-else:
-    st.write("Nenhum bombeio agendado.")
