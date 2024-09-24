@@ -37,7 +37,7 @@ def get_flow_rate(product, company):
 def calculate_end_time(start_datetime, quota, flow_rate):
     duration_hours = quota / flow_rate  # Duração em horas
     end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-    duration_str = f"{int(duration_hours):02d}:00"  # Formato HH:MM
+    duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
 # Inicializa a lista de dados na sessão
@@ -76,30 +76,36 @@ if st.session_state.data:
     edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
     # Recalcular horários de fim e duração ao editar
+    recalculated_data = []
     for index, row in edited_df.iterrows():
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
-        if pd.notna(row['Início']) and isinstance(row['Início'], str):
-            try:
-                # Pega a string da hora de início e calcula o novo horário de fim
-                start_time = row['Início']
-                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+        try:
+            # Pega a string da hora de início e calcula o novo horário de fim
+            start_time = row['Início']
+            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
 
-                if flow_rate:
-                    end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
+            if flow_rate:
+                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-                    # Atualiza as colunas 'Fim' e 'Duração' na edição
-                    edited_df.at[index, 'Fim'] = end_datetime
-                    edited_df.at[index, 'Duração'] = duration_str
-            except Exception as e:
-                st.error(f"Erro ao processar a hora de início: {e}")
+                # Atualiza as colunas 'Fim' e 'Duração' na edição
+                recalculated_data.append({
+                    "Companhia": row['Companhia'],
+                    "Produto": row['Produto'],
+                    "Cota": row['Cota'],
+                    "Início": start_datetime,
+                    "Fim": end_datetime,
+                    "Duração": duration_str
+                })
+        except Exception as e:
+            st.error(f"Erro ao processar a hora de início: {e}")
 
-    # Atualiza o estado da sessão com os dados editados
-    st.session_state.data = edited_df.to_dict(orient="records")
+    # Atualiza o estado da sessão com os dados recalculados
+    st.session_state.data = recalculated_data
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(edited_df).mark_bar().encode(
+    chart = alt.Chart(pd.DataFrame(st.session_state.data)).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
         y='Companhia:N',
@@ -110,4 +116,5 @@ if st.session_state.data:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
