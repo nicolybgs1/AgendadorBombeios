@@ -17,6 +17,9 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
+# Configura o layout da página
+st.set_page_config(layout="wide")
+
 # Título da página
 st.title("Agendador de Bombeios")
 
