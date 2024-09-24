@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from datetime import datetime, timedelta
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -34,7 +33,7 @@ def get_flow_rate(product, company):
     else:
         return None  # Caso o produto não esteja definido
 
-# Calcular a hora de fim com base na cota e taxa de bombeio
+# Cálculo inicial de fim e duração
 flow_rate = get_flow_rate(product, company)
 if flow_rate:
     try:
@@ -47,9 +46,6 @@ if flow_rate:
         st.text(f"Hora de Fim Calculada: {end_time}")
     except ValueError:
         st.error("Formato de hora de início inválido. Use HH:MM.")
-        start_datetime = pd.NaT
-        end_datetime = pd.NaT
-        end_time = None
 else:
     st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
@@ -83,14 +79,14 @@ if "data" in st.session_state:
     # Permitir edição dos dados
     edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
-    # Atualiza o DataFrame com os dados editados
+    # Recalcular horários de fim e duração ao editar
     for index, row in edited_df.iterrows():
-        # Recalcula o fim e a duração se a hora de início for editada
         if pd.notna(row['Início']) and isinstance(row['Início'], str):
             try:
-                start_time = row['Início']  # Pega a string da hora de início
+                # Pega a string da hora de início e calcula o novo horário de fim
+                start_time = row['Início']
                 start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
-                
+
                 flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
                 if flow_rate:
                     duration_hours = row['Cota'] / flow_rate  # Duração em horas
@@ -123,4 +119,5 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
