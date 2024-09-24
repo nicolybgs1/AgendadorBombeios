@@ -58,8 +58,6 @@ if st.button("Adicionar Bombeio"):
     if "data" not in st.session_state:
         st.session_state.data = []
 
-    tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
-
     if pd.notna(start_datetime) and pd.notna(end_datetime):
         # Cálculo e formatação da duração como HH:MM
         duration = end_datetime - start_datetime
@@ -82,17 +80,12 @@ if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
 
-    # Utiliza o data_editor para permitir edição dos dados
-    edited_df = st.data_editor(df, key="data_editor", column_config={
-        "Início": st.column_config.TextInput(placeholder="HH:MM"),
-        "Fim": st.column_config.TextInput(placeholder="HH:MM", disabled=True),
-        "Duração": st.column_config.TextInput(disabled=True),
-        "Cota": st.column_config.NumberInput()
-    })
+    # Permitir edição dos dados
+    edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
     # Atualiza o DataFrame com os dados editados
     for index, row in edited_df.iterrows():
-        # Calcula a nova hora de fim e duração quando a hora de início é editada
+        # Recalcula o fim e a duração se a hora de início for editada
         if pd.notna(row['Início']):
             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
             flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
@@ -103,19 +96,13 @@ if "data" in st.session_state:
             else:
                 end_datetime = pd.NaT
                 duration_str = "00:00"
-        else:
-            end_datetime = pd.NaT
-            duration_str = "00:00"
 
-        # Atualiza as colunas 'Fim' e 'Duração'
-        edited_df.at[index, 'Fim'] = end_datetime
-        edited_df.at[index, 'Duração'] = duration_str
+            # Atualiza as colunas 'Fim' e 'Duração'
+            edited_df.at[index, 'Fim'] = end_datetime
+            edited_df.at[index, 'Duração'] = duration_str
 
+    # Atualiza o estado da sessão com os dados editados
     st.session_state.data = edited_df.to_dict(orient="records")
-
-    # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
-    edited_df['Início'] = pd.to_datetime(edited_df['Início'], errors='coerce')
-    edited_df['Fim'] = pd.to_datetime(edited_df['Fim'], errors='coerce')
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
