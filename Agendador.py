@@ -99,13 +99,17 @@ if not st.session_state.data.empty:
     # Permitir edição dos dados
     edited_df = st.data_editor(df, key="data_editor", use_container_width=True)
 
-    # Adiciona botão de exclusão para cada linha
+    # Adiciona botão de exclusão ao lado de cada linha
     for index, row in edited_df.iterrows():
-        if st.button(f"Remover linha {index + 1}"):
-            st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
-            save_data(st.session_state.data)  # Salva os dados no CSV
-            st.success(f"Linha {index + 1} removida com sucesso!")
-            st.experimental_rerun()  # Atualiza a página para refletir a mudança
+        cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
+        with cols[0]:
+            st.write(row.to_frame().T)  # Exibe a linha
+        with cols[1]:
+            if st.button(f"Remover", key=f"remove_{index}"):
+                st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
+                save_data(st.session_state.data)  # Salva os dados no CSV
+                st.success(f"Linha {index + 1} removida com sucesso!")
+                st.experimental_rerun()  # Atualiza a página para refletir a mudança
 
     # Recalcular dados após edição
     recalculated_data = []
@@ -160,4 +164,3 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
-
