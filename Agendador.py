@@ -62,10 +62,6 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Verificar se o DataFrame está vazio e inicializá-lo se necessário
-if st.session_state.data is None or not isinstance(st.session_state.data, pd.DataFrame):
-    st.session_state.data = pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
-
 # Cálculo inicial de fim e duração
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
@@ -103,38 +99,34 @@ if not st.session_state.data.empty:
         cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
         with cols[0]:
             st.write(row.to_frame().T)  # Exibe a linha do DataFrame
+            
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
-                # Implementar lógica de edição aqui
-                with st.form(key=f"form_edit_{index}"):
-                    edited_company = st.text_input("Companhia", value=row['Companhia'])
-                    edited_product = st.text_input("Produto", value=row['Produto'])
-                    edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'])
-                    edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'))
+                # Campos para edição
+                edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
+                edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
+                edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
+                edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
 
-                    submit_button = st.form_submit_button(label="Salvar alterações")
-                    if submit_button:
-                        # Atualiza os dados no DataFrame
-                        st.session_state.data.at[index, 'Companhia'] = edited_company
-                        st.session_state.data.at[index, 'Produto'] = edited_product
-                        st.session_state.data.at[index, 'Cota'] = edited_quota
-                        st.session_state.data.at[index, 'Início'] = pd.to_datetime(
-                            tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
-                        
-                        # Recalcula o fim e a duração
-                        flow_rate = get_flow_rate(edited_product, edited_company)
-                        if flow_rate:
-                            end_datetime, duration_str = calculate_end_time(st.session_state.data.at[index, 'Início'], edited_quota, flow_rate)
-                            st.session_state.data.at[index, 'Fim'] = end_datetime
-                            st.session_state.data.at[index, 'Duração'] = duration_str
+                if st.button("Salvar alterações", key=f"save_{index}"):
+                    # Atualiza os dados no DataFrame
+                    st.session_state.data.at[index, 'Companhia'] = edited_company
+                    st.session_state.data.at[index, 'Produto'] = edited_product
+                    st.session_state.data.at[index, 'Cota'] = edited_quota
+                    st.session_state.data.at[index, 'Início'] = pd.to_datetime(
+                        tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
+                    
+                    # Recalcula o fim e a duração
+                    flow_rate = get_flow_rate(edited_product, edited_company)
+                    if flow_rate:
+                        end_datetime, duration_str = calculate_end_time(st.session_state.data.at[index, 'Início'], edited_quota, flow_rate)
+                        st.session_state.data.at[index, 'Fim'] = end_datetime
+                        st.session_state.data.at[index, 'Duração'] = duration_str
 
-                        # Salvar no CSV
-                        save_data(st.session_state.data)
-
-                        # Exibir mensagem de sucesso e recarregar os dados
-                        st.success("Alterações salvas com sucesso!")
-                        st.session_state.data = load_data()  # Recarrega os dados do CSV
-                        st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+                    # Salvar no CSV
+                    save_data(st.session_state.data)
+                    st.success("Alterações salvas com sucesso!")
+                    st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
