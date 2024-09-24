@@ -55,12 +55,12 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"  # Formato HH:MM
     return end_datetime, duration_str
 
-# Carregar dados existentes
+# Inicializar o estado da sessão
 if "data" not in st.session_state:
     st.session_state.data = load_data()
 
-# Verificar se o DataFrame está vazio
-if st.session_state.data.empty:
+# Verificar se o DataFrame está vazio e inicializá-lo se necessário
+if st.session_state.data is None or not isinstance(st.session_state.data, pd.DataFrame):
     st.session_state.data = pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
 # Cálculo inicial de fim e duração
