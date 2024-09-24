@@ -42,9 +42,9 @@ def calculate_end_time_and_duration(row):
     
     if flow_rate:
         try:
-            # Garantir que 'Início' seja uma string válida
+            # Garantir que 'Início' seja uma string válida no formato HH:MM
             if isinstance(row['Início'], str):
-                start_datetime = pd.to_datetime(row['Início'], format="%H:%M")
+                start_datetime = pd.to_datetime(row['Início'], format="%Y-%m-%d %H:%M")
                 duration_hours = row['Cota'] / flow_rate  # Duração em horas
                 end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
                 row['Fim'] = end_datetime.strftime("%H:%M")
@@ -65,13 +65,14 @@ if st.button("Adicionar Bombeio"):
     if "data" not in st.session_state:
         st.session_state.data = []
 
-    tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
-
+    # Data de início já com a data de amanhã
+    tomorrow_date_str = tomorrow.strftime("%Y-%m-%d")
+    
     new_data = {
         "Companhia": company,
         "Produto": product,
         "Cota": quota,
-        "Início": tomorrow.strftime("%Y-%m-%d") + " " + start_time,
+        "Início": tomorrow_date_str + " " + start_time,
         "Fim": "",
         "Duração": ""
     }
@@ -116,4 +117,3 @@ if "data" in st.session_state:
         st.altair_chart(chart, use_container_width=True)
     else:
         st.warning("Sem dados válidos para o gráfico.")
-
