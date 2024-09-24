@@ -189,10 +189,8 @@ chart = alt.Chart(chart_data).mark_bar().encode(
     tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']  # Adiciona a duração no tooltip
 ).properties(width=800)
 
-    # Exibe o gráfico
-    st.altair_chart(chart)
-else:
-    st.write("Nenhum bombeio agendado.")
+st.altair_chart(chart, use_container_width=True)
+
 
 
 
