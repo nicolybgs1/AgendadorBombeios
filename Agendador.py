@@ -122,3 +122,9 @@ if st.session_state.data:
 
     st.altair_chart(chart, use_container_width=True)
 
+# Mensagem se não houver dados
+else:
+    st.write("Nenhum bombeio agendado.")
+
+    st.altair_chart(chart, use_container_width=True)
+
