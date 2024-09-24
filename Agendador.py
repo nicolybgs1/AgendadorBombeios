@@ -87,6 +87,10 @@ if "data" in st.session_state:
     # Calcular automaticamente a hora de fim e a duração ao editar
     df = df.apply(calculate_end_time_and_duration, axis=1)
 
+    # Garantir que as colunas 'Início' e 'Fim' estejam no formato datetime
+    df['Início'] = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
+    df['Fim'] = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + df['Fim'], errors='coerce', format="%Y-%m-%d %H:%M")
+
     # Exibir o editor de dados
     st.subheader("Dados de Bombeios Agendados (Editáveis)")
     edited_df = st.data_editor(df, use_container_width=True)
@@ -94,17 +98,21 @@ if "data" in st.session_state:
     # Atualizar o estado com o DataFrame editado
     st.session_state.data = edited_df.to_dict('records')
 
-    # Criar gráfico de Gantt usando Altair
-    st.subheader("Gráfico Gantt de Bombeios")
+    # Verificar se existem dados válidos para o gráfico
+    if not df.empty and df['Início'].notna().all() and df['Fim'].notna().all():
+        # Criar gráfico de Gantt usando Altair
+        st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-        x2='Fim:T',
-        y='Companhia:N',
-        color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
-    ).properties(
-        title='Gráfico Gantt'
-    )
+        chart = alt.Chart(df).mark_bar().encode(
+            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M', title="Hora de Início")),
+            x2='Fim:T',
+            y=alt.Y('Companhia:N', title="Companhia"),
+            color='Produto:N',
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        ).properties(
+            title='Gráfico Gantt de Bombeios'
+        )
 
-    st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, use_container_width=True)
+    else:
+        st.warning("Sem dados válidos para o gráfico.")
