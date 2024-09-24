@@ -101,10 +101,10 @@ if not st.session_state.data.empty:
 
     # Criar variáveis para edição
     edit_index = st.session_state.get("edit_index", -1)
-    edit_row = st.session_state.data.iloc[edit_index] if edit_index >= 0 else None
 
     # Inputs de edição
-    if edit_row is not None:
+    if edit_index >= 0:
+        edit_row = df.iloc[edit_index]
         st.write("Editando bombeio:")
         company_edit = st.text_input("Companhia", value=edit_row["Companhia"])
         product_edit = st.text_input("Produto", value=edit_row["Produto"])
@@ -147,7 +147,6 @@ if not st.session_state.data.empty:
         with cols[2]:
             if st.button(f"Editar", key=f"edit_{index}"):
                 st.session_state.edit_index = index  # Define o índice da linha a ser editada
-                st.experimental_rerun()  # Atualiza a página para mostrar os campos de edição
 
     # Recalcular dados após edição
     recalculated_data = []
