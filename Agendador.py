@@ -4,6 +4,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+from io import BytesIO
 
 # Título da página
 st.title("Agendador de Bombeios")
@@ -36,86 +37,70 @@ def get_flow_rate(product, company):
     else:
         return None  # Caso o produto não esteja definido
 
-# Função para calcular a hora de fim e a duração
-def calculate_end_time_and_duration(row):
-    flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
-    
-    if flow_rate:
-        try:
-            # Garantir que 'Início' seja uma string válida no formato HH:MM
-            if isinstance(row['Início'], str):
-                # Criar datetime de início com a data de amanhã
-                start_datetime = pd.to_datetime(row['Início'], format="%Y-%m-%d %H:%M")
-                duration_hours = row['Cota'] / flow_rate  # Duração em horas
-                end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-                
-                # Atualiza as colunas 'Fim' e 'Duração'
-                row['Fim'] = end_datetime.strftime("%Y-%m-%d %H:%M")  # Hora de Fim apenas com HH:MM
-                duration = end_datetime - start_datetime
-                row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
-            else:
-                row['Fim'] = None
-                row['Duração'] = None
-        except ValueError:
-            st.error("Formato de hora de início inválido. Use HH:MM.")
-            row['Fim'] = None
-            row['Duração'] = None
-    return row
+# Calcular a hora de fim com base na cota e taxa de bombeio
+flow_rate = get_flow_rate(product, company)
+if flow_rate:
+    try:
+        start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+        duration_hours = quota / flow_rate  # Duração em horas
+        end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+
+        # Formatar a hora de fim
+        end_time = end_datetime.strftime("%H:%M")
+        st.text(f"Hora de Fim Calculada: {end_time}")
+    except ValueError:
+        st.error("Formato de hora de início inválido. Use HH:MM.")
+        start_datetime = pd.NaT
+        end_datetime = pd.NaT
+        end_time = None
+else:
+    st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
 # Botão para adicionar a entrada de dados
 if st.button("Adicionar Bombeio"):
     if "data" not in st.session_state:
         st.session_state.data = []
 
-    # Data de início já com a data de amanhã
-    tomorrow_date_str = tomorrow.strftime("%Y-%m-%d")
-    
-    new_data = {
-        "Companhia": company,
-        "Produto": product,
-        "Cota": quota,
-        "Início": tomorrow_date_str + " " + start_time,
-        "Fim": "",
-        "Duração": ""
-    }
+    tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 
-    st.session_state.data.append(new_data)
+    if pd.notna(start_datetime) and pd.notna(end_datetime):
+        # Cálculo e formatação da duração como HH:MM
+        duration = end_datetime - start_datetime
+        duration_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
 
-    st.success("Bombeio adicionado com sucesso!")
+        st.session_state.data.append({
+            "Companhia": company,
+            "Produto": product,
+            "Cota": quota,
+            "Início": start_datetime,
+            "Fim": end_datetime,
+            "Duração": duration_str
+        })
+        st.success("Bombeio adicionado com sucesso!")
+    else:
+        st.error("Erro ao adicionar o bombeio.")
 
-# Exibir os dados adicionados e permitir edição
+# Exibir os dados adicionados
 if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
+    st.subheader("Dados de Bombeios Agendados")
+    st.write(df)
+        
+    # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
+    df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
 
-    # Calcular automaticamente a hora de fim e a duração ao editar
-    df = df.apply(calculate_end_time_and_duration, axis=1)
+    # Criar gráfico de Gantt usando Altair
+    st.subheader("Gráfico Gantt de Bombeios")
 
-    # Garantir que a coluna 'Início' esteja no formato datetime
-    df['Início'] = pd.to_datetime(df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
+    chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+        x2='Fim:T',
+        y='Companhia:N',
+        color='Produto:N',
+        tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+    ).properties(
+        title='Gráfico Gantt'
+    )
 
-    # Exibir o editor de dados
-    st.subheader("Dados de Bombeios Agendados (Editáveis)")
-    edited_df = st.data_editor(df, use_container_width=True)
-
-    # Atualizar o estado com o DataFrame editado
-    st.session_state.data = edited_df.to_dict('records')
-
-    # Verificar se existem dados válidos para o gráfico
-    if not df.empty and df['Início'].notna().all() and df['Fim'].notna().all():
-        # Criar gráfico de Gantt usando Altair
-        st.subheader("Gráfico Gantt de Bombeios")
-
-        chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M', title="Hora de Início")),
-            x2=alt.X2('Fim:T', axis=alt.Axis(format='%H:%M', title="Hora de Fim")),
-            y=alt.Y('Companhia:N', title="Companhia"),
-            color='Produto:N',
-            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
-        ).properties(
-            title='Gráfico Gantt de Bombeios'
-        )
-
-        st.altair_chart(chart, use_container_width=True)
-    else:
-        st.warning("Sem dados válidos para o gráfico.")
-
+    st.altair_chart(chart, use_container_width=True)
