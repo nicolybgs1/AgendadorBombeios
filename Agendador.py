@@ -37,44 +37,38 @@ def get_flow_rate(product, company):
 def calculate_end_time(start_datetime, quota, flow_rate):
     duration_hours = quota / flow_rate  # Duração em horas
     end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-    duration_str = f"{duration_hours:.0f}:00"  # Formato HH:MM
+    duration_str = f"{int(duration_hours):02d}:00"  # Formato HH:MM
     return end_datetime, duration_str
 
+# Inicializa a lista de dados na sessão
+if "data" not in st.session_state:
+    st.session_state.data = []
+
 # Cálculo inicial de fim e duração
-flow_rate = get_flow_rate(product, company)
-if flow_rate:
-    try:
-        start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
-        end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
-
-        # Formatar a hora de fim
-        end_time = end_datetime.strftime("%H:%M")
-        st.text(f"Hora de Fim Calculada: {end_time}")
-    except ValueError:
-        st.error("Formato de hora de início inválido. Use HH:MM.")
-else:
-    st.error("Produto ou Companhia inválidos. Verifique os valores.")
-
-# Botão para adicionar a entrada de dados
 if st.button("Adicionar Bombeio"):
-    if "data" not in st.session_state:
-        st.session_state.data = []
+    flow_rate = get_flow_rate(product, company)
+    
+    if flow_rate:
+        try:
+            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+            end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
-    if pd.notna(start_datetime) and pd.notna(end_datetime):
-        st.session_state.data.append({
-            "Companhia": company,
-            "Produto": product,
-            "Cota": quota,
-            "Início": start_datetime,
-            "Fim": end_datetime,
-            "Duração": duration_str
-        })
-        st.success("Bombeio adicionado com sucesso!")
+            st.session_state.data.append({
+                "Companhia": company,
+                "Produto": product,
+                "Cota": quota,
+                "Início": start_datetime,
+                "Fim": end_datetime,
+                "Duração": duration_str
+            })
+            st.success("Bombeio adicionado com sucesso!")
+        except ValueError:
+            st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
-        st.error("Erro ao adicionar o bombeio.")
+        st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
 # Exibir os dados adicionados
-if "data" in st.session_state:
+if st.session_state.data:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
 
@@ -93,7 +87,7 @@ if "data" in st.session_state:
                 if flow_rate:
                     end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-                    # Atualiza as colunas 'Fim' e 'Duração'
+                    # Atualiza as colunas 'Fim' e 'Duração' na edição
                     edited_df.at[index, 'Fim'] = end_datetime
                     edited_df.at[index, 'Duração'] = duration_str
             except Exception as e:
