@@ -33,13 +33,19 @@ def get_flow_rate(product, company):
     else:
         return None  # Caso o produto não esteja definido
 
+# Função para calcular a hora de fim e duração
+def calculate_end_time(start_datetime, quota, flow_rate):
+    duration_hours = quota / flow_rate  # Duração em horas
+    end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+    duration_str = f"{duration_hours:.0f}:00"  # Formato HH:MM
+    return end_datetime, duration_str
+
 # Cálculo inicial de fim e duração
 flow_rate = get_flow_rate(product, company)
 if flow_rate:
     try:
         start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
-        duration_hours = quota / flow_rate  # Duração em horas
-        end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+        end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
         # Formatar a hora de fim
         end_time = end_datetime.strftime("%H:%M")
@@ -55,10 +61,6 @@ if st.button("Adicionar Bombeio"):
         st.session_state.data = []
 
     if pd.notna(start_datetime) and pd.notna(end_datetime):
-        # Cálculo e formatação da duração como HH:MM
-        duration = end_datetime - start_datetime
-        duration_str = f"{duration.components.hours:02}:{duration.components.minutes:02}"
-
         st.session_state.data.append({
             "Companhia": company,
             "Produto": product,
@@ -81,24 +83,19 @@ if "data" in st.session_state:
 
     # Recalcular horários de fim e duração ao editar
     for index, row in edited_df.iterrows():
+        flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
         if pd.notna(row['Início']) and isinstance(row['Início'], str):
             try:
                 # Pega a string da hora de início e calcula o novo horário de fim
                 start_time = row['Início']
                 start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
 
-                flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
                 if flow_rate:
-                    duration_hours = row['Cota'] / flow_rate  # Duração em horas
-                    end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-                    duration_str = f"{duration_hours:.0f}:00"  # Arredonda para horas
-                else:
-                    end_datetime = pd.NaT
-                    duration_str = "00:00"
+                    end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-                # Atualiza as colunas 'Fim' e 'Duração'
-                edited_df.at[index, 'Fim'] = end_datetime
-                edited_df.at[index, 'Duração'] = duration_str
+                    # Atualiza as colunas 'Fim' e 'Duração'
+                    edited_df.at[index, 'Fim'] = end_datetime
+                    edited_df.at[index, 'Duração'] = duration_str
             except Exception as e:
                 st.error(f"Erro ao processar a hora de início: {e}")
 
@@ -119,5 +116,6 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
 
