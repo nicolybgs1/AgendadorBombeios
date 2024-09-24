@@ -101,7 +101,7 @@ if not st.session_state.data.empty:
 
     # Cria colunas para os dados e os botões
     for index, row in df.iterrows():
-        cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
+        cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
         with cols[0]:
             st.write(row.to_frame().T)  # Exibe a linha do DataFrame
         with cols[1]:
@@ -110,6 +110,32 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
+        with cols[2]:
+            if st.button(f"Editar", key=f"edit_{index}"):
+                # Formulário de edição
+                edit_company = st.text_input("Nova Companhia", value=row['Companhia'], key=f"edit_company_{index}")
+                edit_product = st.text_input("Novo Produto", value=row['Produto'], key=f"edit_product_{index}")
+                edit_quota = st.number_input("Nova Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
+                edit_start_time = st.text_input("Nova Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
+
+                if st.button("Salvar Alterações", key=f"save_{index}"):
+                    flow_rate = get_flow_rate(edit_product, edit_company)
+                    if flow_rate:
+                        start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + edit_start_time)
+                        end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
+
+                        # Atualiza os dados
+                        st.session_state.data.at[index, 'Companhia'] = edit_company
+                        st.session_state.data.at[index, 'Produto'] = edit_product
+                        st.session_state.data.at[index, 'Cota'] = edit_quota
+                        st.session_state.data.at[index, 'Início'] = start_datetime
+                        st.session_state.data.at[index, 'Fim'] = end_datetime
+                        st.session_state.data.at[index, 'Duração'] = duration_str
+                        save_data(st.session_state.data)  # Salva os dados no CSV
+                        st.success("Bombeio atualizado com sucesso!")
+                        st.experimental_rerun()  # Atualiza a página para refletir a mudança
+                    else:
+                        st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
     # Recalcular dados após edição
     recalculated_data = []
@@ -164,3 +190,4 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
+
