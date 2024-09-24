@@ -42,12 +42,18 @@ def calculate_end_time_and_duration(row):
     
     if flow_rate:
         try:
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
-            duration_hours = row['Cota'] / flow_rate  # Duração em horas
-            end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-            row['Fim'] = end_datetime.strftime("%H:%M")
-            duration = end_datetime - start_datetime
-            row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
+            # Garantir que 'Início' seja uma string válida
+            if isinstance(row['Início'], str):
+                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
+                duration_hours = row['Cota'] / flow_rate  # Duração em horas
+                end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+                row['Fim'] = end_datetime.strftime("%H:%M")
+                
+                duration = end_datetime - start_datetime
+                row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
+            else:
+                row['Fim'] = None
+                row['Duração'] = None
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
             row['Fim'] = None
@@ -102,5 +108,3 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
-
-    
