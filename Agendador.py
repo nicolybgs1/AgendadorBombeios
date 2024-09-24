@@ -81,8 +81,9 @@ if st.session_state.data:
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
         try:
             # Pega a string da hora de início e calcula o novo horário de fim
-            start_time = row['Início']
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M"))
+            start_datetime = pd.to_datetime(row['Início'])
+            if pd.isna(start_datetime):  # Se o valor for NaT
+                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'].strftime("%H:%M"))
 
             if flow_rate:
                 end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
