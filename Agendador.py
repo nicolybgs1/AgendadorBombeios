@@ -44,7 +44,7 @@ def calculate_end_time_and_duration(row):
         try:
             # Garantir que 'Início' seja uma string válida
             if isinstance(row['Início'], str):
-                start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + row['Início'])
+                start_datetime = pd.to_datetime(row['Início'], format="%H:%M")
                 duration_hours = row['Cota'] / flow_rate  # Duração em horas
                 end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
                 row['Fim'] = end_datetime.strftime("%H:%M")
@@ -71,7 +71,7 @@ if st.button("Adicionar Bombeio"):
         "Companhia": company,
         "Produto": product,
         "Cota": quota,
-        "Início": start_time,
+        "Início": tomorrow.strftime("%Y-%m-%d") + " " + start_time,
         "Fim": "",
         "Duração": ""
     }
@@ -88,8 +88,8 @@ if "data" in st.session_state:
     df = df.apply(calculate_end_time_and_duration, axis=1)
 
     # Garantir que as colunas 'Início' e 'Fim' estejam no formato datetime
-    df['Início'] = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
-    df['Fim'] = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + df['Fim'], errors='coerce', format="%Y-%m-%d %H:%M")
+    df['Início'] = pd.to_datetime(df['Início'], errors='coerce', format="%Y-%m-%d %H:%M")
+    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce', format="%Y-%m-%d %H:%M")
 
     # Exibir o editor de dados
     st.subheader("Dados de Bombeios Agendados (Editáveis)")
@@ -116,3 +116,4 @@ if "data" in st.session_state:
         st.altair_chart(chart, use_container_width=True)
     else:
         st.warning("Sem dados válidos para o gráfico.")
+
