@@ -50,7 +50,7 @@ def calculate_end_time_and_duration(row):
                 end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
                 
                 # Atualiza as colunas 'Fim' e 'Duração'
-                row['Fim'] = end_datetime.strftime("%H:%M")  # Hora de Fim apenas com HH:MM
+                row['Fim'] = end_datetime.strftime("%Y-%m-%d %H:%M")  # Hora de Fim apenas com HH:MM
                 duration = end_datetime - start_datetime
                 row['Duração'] = f"{duration.components.hours:02}:{duration.components.minutes:02}"
             else:
