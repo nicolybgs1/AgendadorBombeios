@@ -84,16 +84,46 @@ if st.button("Adicionar Bombeio"):
 if "data" in st.session_state:
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Dados de Bombeios Agendados")
-    st.write(df)
-        
+
+    # Utiliza o data_editor para permitir edição dos dados
+    edited_df = st.data_editor(df, key="data_editor", column_config={
+        "Início": st.column_config.TimeInput(),
+        "Fim": st.column_config.TimeInput(),
+        "Duração": st.column_config.TextInput(),
+        "Cota": st.column_config.NumberInput()
+    })
+
+    # Atualiza o DataFrame com os dados editados
+    for index, row in edited_df.iterrows():
+        # Calcula a nova hora de fim e duração quando a hora de início é editada
+        if pd.notna(row['Início']):
+            start_datetime = pd.to_datetime(row['Início'])
+            flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
+            if flow_rate:
+                duration_hours = row['Cota'] / flow_rate  # Duração em horas
+                end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
+                duration_str = f"{duration_hours:.0f}:00"  # Arredonda para horas
+            else:
+                end_datetime = pd.NaT
+                duration_str = "00:00"
+        else:
+            end_datetime = pd.NaT
+            duration_str = "00:00"
+
+        # Atualiza as colunas 'Fim' e 'Duração'
+        edited_df.at[index, 'Fim'] = end_datetime
+        edited_df.at[index, 'Duração'] = duration_str
+
+    st.session_state.data = edited_df.to_dict(orient="records")
+
     # Garantir que as colunas 'Início' e 'Fim' estão no formato datetime
-    df['Início'] = pd.to_datetime(df['Início'], errors='coerce')
-    df['Fim'] = pd.to_datetime(df['Fim'], errors='coerce')
+    edited_df['Início'] = pd.to_datetime(edited_df['Início'], errors='coerce')
+    edited_df['Fim'] = pd.to_datetime(edited_df['Fim'], errors='coerce')
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
-    chart = alt.Chart(df).mark_bar().encode(
+    chart = alt.Chart(edited_df).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
         y='Companhia:N',
@@ -104,3 +134,4 @@ if "data" in st.session_state:
     )
 
     st.altair_chart(chart, use_container_width=True)
+
