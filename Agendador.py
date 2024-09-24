@@ -89,6 +89,7 @@ if st.button("Adicionar Bombeio"):
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
             save_data(st.session_state.data)  # Salva os dados no CSV
             st.success("Bombeio adicionado com sucesso!")
+            st.experimental_rerun()  # Recarrega a página para refletir a mudança
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
@@ -128,6 +129,7 @@ if not st.session_state.data.empty:
                         # Salvar no CSV
                         save_data(st.session_state.data)
                         st.success("Alterações salvas com sucesso!")
+                        st.experimental_rerun()  # Recarrega a página para refletir a mudança
                     else:
                         st.error("Taxa de bombeio não encontrada para o produto ou companhia.")
                 except ValueError:
@@ -138,7 +140,7 @@ if not st.session_state.data.empty:
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                st.experimental_rerun()  # Atualiza a página para refletir a mudança
+                st.experimental_rerun()  # Recarrega a página para refletir a mudança
 
     # Recalcular dados após edição
     recalculated_data = []
@@ -185,8 +187,10 @@ if not st.session_state.data.empty:
         color='Produto:N'
     ).properties(width=800)
 
+    # Exibe o gráfico
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
 
 
