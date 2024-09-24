@@ -81,13 +81,14 @@ if st.session_state.data:
     for index, row in edited_df.iterrows():
         flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
         try:
-            # Pega a string da hora de início e calcula o novo horário de fim
+            # Converte a hora de início para datetime
             start_datetime = pd.to_datetime(row['Início'])
 
             if flow_rate is not None:
+                # Recalcula hora de fim e duração
                 end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
 
-                # Atualiza as colunas 'Fim' e 'Duração' na edição
+                # Adiciona os dados recalculados
                 recalculated_data.append({
                     "Companhia": row['Companhia'],
                     "Produto": row['Produto'],
