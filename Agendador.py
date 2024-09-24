@@ -180,12 +180,14 @@ if not st.session_state.data.empty:
     # Converte o DataFrame recalculado em gráfico
     chart_data = st.session_state.data
     
-    chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-        x2='Fim:T',
-        y='Companhia:N',
-        color='Produto:N'
-    ).properties(width=800)
+# Criar o gráfico com tooltip para exibir a duração
+chart = alt.Chart(chart_data).mark_bar().encode(
+    x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+    x2='Fim:T',
+    y='Companhia:N',
+    color='Produto:N',
+    tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']  # Adiciona a duração no tooltip
+).properties(width=800)
 
     # Exibe o gráfico
     st.altair_chart(chart)
