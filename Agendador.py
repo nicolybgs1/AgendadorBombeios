@@ -155,13 +155,7 @@ if not st.session_state.data.empty:
 
     st.altair_chart(chart)
     
-    # Botão para baixar o CSV
-    st.download_button(
-        label="Baixar CSV",
-        data=st.session_state.data.to_csv(index=False).encode('utf-8'),
-        file_name='bombeios_agendados.csv',
-        mime='text/csv',
-    )
+
 else:
     st.write("Nenhum bombeio agendado.")
 
