@@ -125,9 +125,14 @@ if not st.session_state.data.empty:
                             save_data(st.session_state.data)  # Salvar no CSV
                             
                             st.success("Alterações salvas com sucesso!")
+
+                            time.sleep(5)  # Pausa de 2 segundos
                             
-                            time.sleep(2)  # Pausa de 2 segundos
-                            
+                            # Atualiza a página para refletir as mudanças após a mensagem ser exibida
+                            st.experimental_rerun()
+                        except ValueError:
+                            st.error("Formato de hora de início inválido. Use HH:MM.")
+
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
