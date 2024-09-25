@@ -122,6 +122,7 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
                             save_data(st.session_state.data)  # Salvar no CSV
+                            st.write(st.session_state.data)
                             st.success("Alterações salvas com sucesso!")
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
