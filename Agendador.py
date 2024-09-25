@@ -4,8 +4,8 @@ import altair as alt
 import os
 import time
 
-# Nome do arquivo CSV para armazenamento no diretório local
-DATA_FILE = os.path.join(os.getcwd(), "bombeios_agendados.csv")  # Salva no diretório atual
+# Nome do arquivo CSV para armazenamento
+DATA_FILE = "bombeios_agendados.csv"
 
 # Função para carregar dados do CSV
 def load_data():
@@ -86,14 +86,7 @@ if st.button("Adicionar Bombeio"):
             st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
-        
-# Botão para baixar o CSV atualizado
-st.download_button(
-    label="Baixar CSV Atualizado",
-    data=st.session_state.data.to_csv(index=False).encode('utf-8'),
-    file_name='bombeios_agendados.csv',
-    mime='text/csv',
-)
+
 # Exibir os dados adicionados e permitir edição ou remoção
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
@@ -112,6 +105,10 @@ if not st.session_state.data.empty:
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
                 edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
                 edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
+
+                # Inicializar o estado de edição se não estiver presente
+                if 'edit_status' not in st.session_state:
+                    st.session_state.edit_status = False
 
                 # Salvar alterações
                 if st.button("Salvar alterações", key=f"save_{index}"):
@@ -161,9 +158,5 @@ if not st.session_state.data.empty:
     ).properties(width=800)
 
     st.altair_chart(chart)
-    
-
 else:
     st.write("Nenhum bombeio agendado.")
-
-
