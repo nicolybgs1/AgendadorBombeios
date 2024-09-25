@@ -137,7 +137,7 @@ if not st.session_state.data.empty:
 
                             save_data(st.session_state.data)  # Salvar no CSV
                             st.success("Alterações salvas com sucesso!")
-                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças após a mensagem ser exibida
+                            # Remover st.experimental_rerun() aqui
 
                         else:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -166,4 +166,5 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
 
