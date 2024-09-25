@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
+from datetime import datetime
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -39,6 +40,13 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"
     return end_datetime, duration_str
 
+# Função para validar a hora de início
+def validate_start_time(start_time):
+    try:
+        return pd.to_datetime(start_time, format="%H:%M", errors='raise')
+    except ValueError:
+        return None
+
 # Configura o layout da página
 st.set_page_config(layout="wide")
 
@@ -59,7 +67,8 @@ start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
     if flow_rate:
-        try:
+        start_datetime = validate_start_time(start_time)
+        if start_datetime is not None:
             start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
@@ -77,7 +86,7 @@ if st.button("Adicionar Bombeio"):
             st.success("Bombeio adicionado com sucesso!")
             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
-        except ValueError:
+        else:
             st.error("Formato de hora de início inválido. Use HH:MM.")
 
 # Botão para baixar o CSV atualizado
@@ -109,7 +118,8 @@ if not st.session_state.data.empty:
                 if st.button("Salvar alterações", key=f"save_{index}"):
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
-                        try:
+                        start_datetime = validate_start_time(edited_start_time)
+                        if start_datetime is not None:
                             start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(edited_start_time)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
@@ -125,7 +135,7 @@ if not st.session_state.data.empty:
                             st.success("Alterações salvas com sucesso!")
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças após a mensagem ser exibida
 
-                        except ValueError:
+                        else:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
                     else:
                         st.error("Produto ou Companhia inválidos. Verifique os valores.")
@@ -152,4 +162,5 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
 
