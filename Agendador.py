@@ -74,7 +74,8 @@ if st.button("Adicionar Bombeio"):
 
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
             save_data(st.session_state.data)
-            st.success("Bombeio adicionado com sucesso! Clique no botão abaixo para baixar o arquivo atualizado.")
+            st.success("Bombeio adicionado com sucesso!")
+            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -122,9 +123,8 @@ if not st.session_state.data.empty:
 
                             save_data(st.session_state.data)  # Salvar no CSV
                             st.success("Alterações salvas com sucesso!")
-                            
-                            # Atualiza a página para refletir as mudanças após a mensagem ser exibida
-                            st.experimental_rerun()
+                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças após a mensagem ser exibida
+
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
                     else:
@@ -135,7 +135,7 @@ if not st.session_state.data.empty:
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
                 save_data(st.session_state.data)
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                st.experimental_rerun()
+                st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
     # Gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
