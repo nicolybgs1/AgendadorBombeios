@@ -4,8 +4,8 @@ import altair as alt
 import os
 import time
 
-# Nome do arquivo CSV para armazenamento
-DATA_FILE = "bombeios_agendados.csv"
+# Nome do arquivo CSV para armazenamento no diretório local
+DATA_FILE = os.path.join(os.getcwd(), "bombeios_agendados.csv")  # Salva no diretório atual
 
 # Função para carregar dados do CSV
 def load_data():
@@ -164,4 +164,5 @@ if not st.session_state.data.empty:
     )
 else:
     st.write("Nenhum bombeio agendado.")
+
 
