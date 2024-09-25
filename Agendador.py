@@ -43,7 +43,6 @@ def calculate_end_time(start_datetime, quota, flow_rate):
 # Função para validar a hora de início
 def validate_start_time(start_time):
     try:
-        # Verifica se a hora está no formato HH:MM
         return pd.to_datetime(start_time, format="%H:%M", errors='raise').time()
     except ValueError:
         return None
@@ -70,7 +69,6 @@ if st.button("Adicionar Bombeio"):
     if flow_rate:
         start_time_obj = validate_start_time(start_time)
         if start_time_obj is not None:
-            # Combina a data atual com a hora de início
             today = datetime.today()
             start_datetime = datetime.combine(today, start_time_obj)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
@@ -84,8 +82,9 @@ if st.button("Adicionar Bombeio"):
                 "Duração": duration_str
             }])
 
+            # Atualiza o DataFrame no estado da sessão
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)
+            save_data(st.session_state.data)  # Salva os dados no CSV
             st.success("Bombeio adicionado com sucesso!")
             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
@@ -101,7 +100,6 @@ st.download_button(
 )
 
 # Exibir os dados adicionados e permitir edição ou remoção
-# Edição dos dados
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
     for index, row in st.session_state.data.iterrows():
@@ -128,7 +126,7 @@ if not st.session_state.data.empty:
                             start_datetime = datetime.combine(today, start_time_obj)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
-                            # Atualizar o DataFrame com as alterações
+                            # Atualiza o DataFrame com as alterações
                             st.session_state.data.at[index, 'Companhia'] = edited_company
                             st.session_state.data.at[index, 'Produto'] = edited_product
                             st.session_state.data.at[index, 'Cota'] = edited_quota
@@ -138,7 +136,7 @@ if not st.session_state.data.empty:
 
                             save_data(st.session_state.data)  # Salvar no CSV
                             st.success("Alterações salvas com sucesso!")
-                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças após a mensagem ser exibida
+                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
                         else:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -151,7 +149,6 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir as mudanças
-
 
     # Gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
@@ -168,5 +165,6 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
 
 
