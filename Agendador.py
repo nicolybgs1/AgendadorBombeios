@@ -135,6 +135,8 @@ if not st.session_state.data.empty:
                             st.experimental_rerun()
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
+                    else:
+                        st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
