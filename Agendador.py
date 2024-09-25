@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
+import time
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -124,6 +125,8 @@ if not st.session_state.data.empty:
                             save_data(st.session_state.data)  # Salvar no CSV
                             
                             st.success("Alterações salvas com sucesso!")
+                            
+                            time.sleep(2)  # Pausa de 2 segundos
                             
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
