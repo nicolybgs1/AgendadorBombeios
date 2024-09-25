@@ -1,35 +1,42 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import os
+import sqlite3
 from datetime import datetime
 
-# Nome do arquivo CSV para armazenamento
-DATA_FILE = "bombeios_agendados.csv"
+# Nome do banco de dados SQLite
+DATABASE_NAME = "bombeios_agendados.db"
 
-# Função para carregar dados do CSV
+# Função para criar a tabela se não existir
+def create_table():
+    conn = sqlite3.connect(DATABASE_NAME)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS bombeios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Companhia TEXT,
+            Produto TEXT,
+            Cota INTEGER,
+            Início DATETIME,
+            Fim DATETIME,
+            Duração TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Função para carregar dados do banco de dados
 def load_data():
-    if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE, parse_dates=["Início", "Fim"])
-    else:
-        return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
+    conn = sqlite3.connect(DATABASE_NAME)
+    df = pd.read_sql_query("SELECT * FROM bombeios", conn, parse_dates=["Início", "Fim"])
+    conn.close()
+    return df
 
-# Função para salvar dados no CSV com exclusão do arquivo anterior
-def save_data(df):
-    global DATA_FILE  # Mover a declaração global para o início da função
-    # Cria um novo nome de arquivo com timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    new_file_name = f"bombeios_agendados_{timestamp}.csv"
-    
-    # Salva o novo arquivo
-    df.to_csv(new_file_name, index=False)
-
-    # Exclui o arquivo anterior, se existir
-    if os.path.exists(DATA_FILE):
-        os.remove(DATA_FILE)
-
-    # Atualiza o nome do arquivo de dados para o novo
-    DATA_FILE = new_file_name
+# Função para salvar dados no banco de dados
+def save_data(data):
+    conn = sqlite3.connect(DATABASE_NAME)
+    data.to_sql('bombeios', conn, if_exists='replace', index=False)
+    conn.close()
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
@@ -59,6 +66,9 @@ def validate_start_time(start_time):
         return pd.to_datetime(start_time, format="%H:%M", errors='raise').time()
     except ValueError:
         return None
+
+# Inicializar a tabela no banco de dados
+create_table()
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
@@ -97,7 +107,7 @@ if st.button("Adicionar Bombeio"):
 
             # Atualiza o DataFrame no estado da sessão
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)  # Salva os dados no CSV
+            save_data(st.session_state.data)  # Salva os dados no banco de dados
             st.success("Bombeio adicionado com sucesso!")
             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
@@ -147,7 +157,7 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Fim'] = end_datetime
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
-                            save_data(st.session_state.data)  # Salvar no CSV
+                            save_data(st.session_state.data)  # Salvar no banco de dados
                             st.success("Alterações salvas com sucesso!")
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
@@ -159,7 +169,7 @@ if not st.session_state.data.empty:
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
-                save_data(st.session_state.data)
+                save_data(st.session_state.data)  # Salvar no banco de dados
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
