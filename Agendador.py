@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
-import time
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -17,27 +16,6 @@ def load_data():
 # Função para salvar dados no CSV
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
-    st.success("Dados salvos com sucesso no CSV!")
-
-# Configura o layout da página
-st.set_page_config(layout="wide")
-
-# Título da página
-st.title("Agendador de Bombeios")
-
-# Exibir a data de amanhã no início da página
-tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
-st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
-
-# Inicializar o estado da sessão
-if "data" not in st.session_state:
-    st.session_state.data = load_data()
-
-# Inputs para coletar os dados
-company = st.text_input("Companhia")
-product = st.text_input("Produto")
-quota = st.number_input("Cota", min_value=0, step=1)
-start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
@@ -61,13 +39,28 @@ def calculate_end_time(start_datetime, quota, flow_rate):
     duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"
     return end_datetime, duration_str
 
+# Configura o layout da página
+st.set_page_config(layout="wide")
+
+# Título da página
+st.title("Agendador de Bombeios")
+
+# Inicializar o estado da sessão
+if "data" not in st.session_state:
+    st.session_state.data = load_data()
+
+# Inputs para coletar os dados
+company = st.text_input("Companhia")
+product = st.text_input("Produto")
+quota = st.number_input("Cota", min_value=0, step=1)
+start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
+
 # Adicionando novo bombeio
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
-    
     if flow_rate:
         try:
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+            start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             new_bomb = pd.DataFrame([{
@@ -78,19 +71,25 @@ if st.button("Adicionar Bombeio"):
                 "Fim": end_datetime,
                 "Duração": duration_str
             }])
-            
+
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
             save_data(st.session_state.data)
-            st.success("Bombeio adicionado com sucesso!")
+            st.success("Bombeio adicionado com sucesso! Clique no botão abaixo para baixar o arquivo atualizado.")
+
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
-    else:
-        st.error("Produto ou Companhia inválidos. Verifique os valores.")
+
+# Botão para baixar o CSV atualizado
+st.download_button(
+    label="Baixar CSV Atualizado",
+    data=st.session_state.data.to_csv(index=False).encode('utf-8'),
+    file_name='bombeios_agendados.csv',
+    mime='text/csv',
+)
 
 # Exibir os dados adicionados e permitir edição ou remoção
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
-
     for index, row in st.session_state.data.iterrows():
         cols = st.columns([4, 1, 1])
 
@@ -99,23 +98,18 @@ if not st.session_state.data.empty:
 
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
-
                 # Inputs para edição
                 edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
                 edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
                 edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
 
-                # Inicializar o estado de edição se não estiver presente
-                if 'edit_status' not in st.session_state:
-                    st.session_state.edit_status = False
-
                 # Salvar alterações
                 if st.button("Salvar alterações", key=f"save_{index}"):
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
                         try:
-                            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
+                            start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(edited_start_time)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
                             # Atualizar o DataFrame com as alterações
@@ -127,8 +121,6 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
                             save_data(st.session_state.data)  # Salvar no CSV
-                            
-                            # Mostrar a mensagem de sucesso
                             st.success("Alterações salvas com sucesso!")
                             
                             # Atualiza a página para refletir as mudanças após a mensagem ser exibida
@@ -160,3 +152,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
