@@ -124,14 +124,17 @@ if not st.session_state.data.empty:
 
                             save_data(st.session_state.data)  # Salvar no CSV
                             
+                            # Sinalizar que a edição foi salva
+                            st.session_state.edit_status = True
                             st.success("Alterações salvas com sucesso!")
-
-                            time.sleep(5)  # Pausa de 2 segundos
-                            
-                            # Atualiza a página para refletir as mudanças após a mensagem ser exibida
-                            st.experimental_rerun()
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
+                
+                # Exibir a mensagem de sucesso sem recarregar a página imediatamente
+                if st.session_state.edit_status:
+                    st.success("Alterações salvas com sucesso!")
+                    # Resetar o status de edição para evitar mensagens repetidas
+                    st.session_state.edit_status = False
 
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
