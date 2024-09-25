@@ -9,55 +9,48 @@ DATABASE_NAME = "bombeios_agendados.db"
 
 # Função para criar a tabela se não existir
 def create_table():
-    conn = sqlite3.connect(DATABASE_NAME)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS bombeios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Companhia TEXT,
-            Produto TEXT,
-            Cota INTEGER,
-            Início DATETIME,
-            Fim DATETIME,
-            Duração TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DATABASE_NAME) as conn:
+        c = conn.cursor()
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS bombeios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Companhia TEXT,
+                Produto TEXT,
+                Cota INTEGER,
+                Início DATETIME,
+                Fim DATETIME,
+                Duração TEXT
+            )
+        ''')
+        conn.commit()
 
 # Função para carregar dados do banco de dados
 def load_data():
-    conn = sqlite3.connect(DATABASE_NAME)
-    df = pd.read_sql_query("SELECT * FROM bombeios", conn, parse_dates=["Início", "Fim"])
-    conn.close()
+    with sqlite3.connect(DATABASE_NAME) as conn:
+        df = pd.read_sql_query("SELECT * FROM bombeios", conn, parse_dates=["Início", "Fim"])
     return df
 
 # Função para salvar dados no banco de dados
 def save_data(data):
-    conn = sqlite3.connect(DATABASE_NAME)
-    data.to_sql('bombeios', conn, if_exists='replace', index=False)
-    conn.close()
+    with sqlite3.connect(DATABASE_NAME) as conn:
+        data.to_sql('bombeios', conn, if_exists='replace', index=False)
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
-    if product == "GAS":
-        return 500
-    elif product == "S10":
-        return 1200 if company in ["POOL", "VIBRA"] else 600
-    elif product == "S500":
-        return 560
-    elif product == "QAV":
-        return 240
-    elif product == "OC1A":
-        return 300
-    else:
-        return None
+    flow_rates = {
+        "GAS": 500,
+        "S10": 1200 if company in ["POOL", "VIBRA"] else 600,
+        "S500": 560,
+        "QAV": 240,
+        "OC1A": 300
+    }
+    return flow_rates.get(product)
 
 # Função para calcular a hora de fim e duração
 def calculate_end_time(start_datetime, quota, flow_rate):
     duration_hours = quota / flow_rate
     end_datetime = start_datetime + pd.Timedelta(hours=duration_hours)
-    duration_str = f"{int(duration_hours):02d}:{int((duration_hours - int(duration_hours)) * 60):02d}"
+    duration_str = f"{int(duration_hours):02d}:{int((duration_hours % 1) * 60):02d}"
     return end_datetime, duration_str
 
 # Função para validar a hora de início
@@ -91,7 +84,7 @@ if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
     if flow_rate:
         start_time_obj = validate_start_time(start_time)
-        if start_time_obj is not None:
+        if start_time_obj:
             today = datetime.today()
             start_datetime = datetime.combine(today, start_time_obj)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
@@ -105,12 +98,10 @@ if st.button("Adicionar Bombeio"):
                 "Duração": duration_str
             }])
 
-            # Atualiza o DataFrame no estado da sessão
+            # Atualiza o DataFrame no estado da sessão e salva no banco de dados
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)  # Salva os dados no banco de dados
+            save_data(st.session_state.data)
             st.success("Bombeio adicionado com sucesso!")
-            #st.experimental_rerun()  # Atualiza a página para refletir as mudanças
-
         else:
             st.error("Formato de hora de início inválido. Use HH:MM.")
 
@@ -132,7 +123,7 @@ if not st.session_state.data.empty:
             st.write(row.to_frame().T)
 
         with cols[1]:
-            if st.button(f"Editar", key=f"edit_{index}"):
+            if st.button("Editar", key=f"edit_{index}"):
                 # Inputs para edição
                 edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
@@ -144,7 +135,7 @@ if not st.session_state.data.empty:
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
                         start_time_obj = validate_start_time(edited_start_time)
-                        if start_time_obj is not None:
+                        if start_time_obj:
                             today = datetime.today()
                             start_datetime = datetime.combine(today, start_time_obj)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
@@ -167,7 +158,7 @@ if not st.session_state.data.empty:
                         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
         with cols[2]:
-            if st.button(f"Remover", key=f"remove_{index}"):
+            if st.button("Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
                 save_data(st.session_state.data)  # Salvar no banco de dados
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
@@ -188,5 +179,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
 
