@@ -43,7 +43,8 @@ def calculate_end_time(start_datetime, quota, flow_rate):
 # Função para validar a hora de início
 def validate_start_time(start_time):
     try:
-        return pd.to_datetime(start_time, format="%H:%M", errors='raise')
+        # Verifica se a hora está no formato HH:MM
+        return pd.to_datetime(start_time, format="%H:%M", errors='raise').time()
     except ValueError:
         return None
 
@@ -67,9 +68,11 @@ start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
     if flow_rate:
-        start_datetime = validate_start_time(start_time)
-        if start_datetime is not None:
-            start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(start_time)
+        start_time_obj = validate_start_time(start_time)
+        if start_time_obj is not None:
+            # Combina a data atual com a hora de início
+            today = datetime.today()
+            start_datetime = datetime.combine(today, start_time_obj)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             new_bomb = pd.DataFrame([{
@@ -118,9 +121,10 @@ if not st.session_state.data.empty:
                 if st.button("Salvar alterações", key=f"save_{index}"):
                     flow_rate = get_flow_rate(edited_product, edited_company)
                     if flow_rate:
-                        start_datetime = validate_start_time(edited_start_time)
-                        if start_datetime is not None:
-                            start_datetime = pd.to_datetime("today") + pd.Timedelta(days=1) + pd.to_timedelta(edited_start_time)
+                        start_time_obj = validate_start_time(edited_start_time)
+                        if start_time_obj is not None:
+                            today = datetime.today()
+                            start_datetime = datetime.combine(today, start_time_obj)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
                             # Atualizar o DataFrame com as alterações
@@ -162,5 +166,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
 
