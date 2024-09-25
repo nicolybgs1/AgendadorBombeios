@@ -126,20 +126,18 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Fim'] = end_datetime
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
+                            
+                            st.write(st.session_state.data)
                             save_data(st.session_state.data)  # Salvar no CSV
                             
-                            # Sinalizar que a edição foi salva
-                            st.session_state.edit_status = True
+                            # Mostrar a mensagem de sucesso
                             st.success("Alterações salvas com sucesso!")
+                            
+                            # Atualiza a página para refletir as mudanças após a mensagem ser exibida
+                            #st.experimental_rerun()
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
-                
-                # Exibir a mensagem de sucesso sem recarregar a página imediatamente
-                if st.session_state.edit_status:
-                    st.success("Alterações salvas com sucesso!")
-                    # Resetar o status de edição para evitar mensagens repetidas
-                    st.session_state.edit_status = False
-
+        
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
