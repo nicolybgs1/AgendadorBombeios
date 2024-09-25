@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
+import time
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -98,6 +99,7 @@ if not st.session_state.data.empty:
 
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
+
                 # Inputs para edição
                 edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
@@ -124,7 +126,6 @@ if not st.session_state.data.empty:
                             
                             # Mostrar a mensagem de sucesso
                             st.success("Alterações salvas com sucesso!")
-                            st.write(st.session_state.data)
                             
                             # Atualiza a página para refletir as mudanças após a mensagem ser exibida
                             st.experimental_rerun()
@@ -153,6 +154,14 @@ if not st.session_state.data.empty:
     ).properties(width=800)
 
     st.altair_chart(chart)
+    
+    # Botão para baixar o CSV
+    st.download_button(
+        label="Baixar CSV",
+        data=st.session_state.data.to_csv(index=False).encode('utf-8'),
+        file_name='bombeios_agendados.csv',
+        mime='text/csv',
+    )
 else:
     st.write("Nenhum bombeio agendado.")
 
