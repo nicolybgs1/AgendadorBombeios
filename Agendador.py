@@ -134,9 +134,13 @@ if not st.session_state.data.empty:
                             st.success("Alterações salvas com sucesso!")
                             
                             # Atualiza a página para refletir as mudanças após a mensagem ser exibida
-                            #st.experimental_rerun()
+                            st.experimental_rerun()
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
+                        except Exception as e:
+                            st.error(f"Ocorreu um erro: {e}")  # Captura outros erros
+                    else:
+                        st.error("Taxa de bombeio não encontrada. Verifique os valores de produto e companhia.")
         
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
