@@ -124,6 +124,7 @@ if not st.session_state.data.empty:
                             
                             # Mostrar a mensagem de sucesso
                             st.success("Alterações salvas com sucesso!")
+                            st.write(st.session_state.data)
                             
                             # Atualiza a página para refletir as mudanças após a mensagem ser exibida
                             st.experimental_rerun()
