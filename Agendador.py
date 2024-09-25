@@ -66,14 +66,14 @@ if st.button("Adicionar Bombeio"):
     
     if flow_rate:
         try:
-            start_datetime1 = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             new_bomb = pd.DataFrame([{
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
-                "Início": start_datetime1,
+                "Início": start_datetime,
                 "Fim": end_datetime,
                 "Duração": duration_str
             }])
@@ -122,7 +122,9 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
                             save_data(st.session_state.data)  # Salvar no CSV
+                            
                             st.success("Alterações salvas com sucesso!")
+                            
                             st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
