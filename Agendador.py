@@ -14,9 +14,13 @@ def load_data():
     else:
         return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
-# Função para salvar dados no CSV
+
+# Função para salvar dados no CSV com timestamp
 def save_data(df):
-    df.to_csv(DATA_FILE, index=False)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    new_file_name = f"bombeios_agendados_{timestamp}.csv"
+    df.to_csv(new_file_name, index=False)
+
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
