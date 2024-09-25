@@ -16,6 +16,7 @@ def load_data():
 
 # Função para salvar dados no CSV com exclusão do arquivo anterior
 def save_data(df):
+    global DATA_FILE  # Mover a declaração global para o início da função
     # Cria um novo nome de arquivo com timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     new_file_name = f"bombeios_agendados_{timestamp}.csv"
@@ -28,7 +29,6 @@ def save_data(df):
         os.remove(DATA_FILE)
 
     # Atualiza o nome do arquivo de dados para o novo
-    global DATA_FILE
     DATA_FILE = new_file_name
 
 # Função para calcular a taxa de bombeio
