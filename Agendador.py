@@ -126,8 +126,6 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Fim'] = end_datetime
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
-                            
-                            st.write(st.session_state.data)
                             save_data(st.session_state.data)  # Salvar no CSV
                             
                             # Mostrar a mensagem de sucesso
@@ -137,11 +135,7 @@ if not st.session_state.data.empty:
                             st.experimental_rerun()
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
-                        except Exception as e:
-                            st.error(f"Ocorreu um erro: {e}")  # Captura outros erros
-                    else:
-                        st.error("Taxa de bombeio não encontrada. Verifique os valores de produto e companhia.")
-        
+
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
