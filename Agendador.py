@@ -14,13 +14,22 @@ def load_data():
     else:
         return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
-
-# Função para salvar dados no CSV com timestamp
+# Função para salvar dados no CSV com exclusão do arquivo anterior
 def save_data(df):
+    # Cria um novo nome de arquivo com timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     new_file_name = f"bombeios_agendados_{timestamp}.csv"
+    
+    # Salva o novo arquivo
     df.to_csv(new_file_name, index=False)
 
+    # Exclui o arquivo anterior, se existir
+    if os.path.exists(DATA_FILE):
+        os.remove(DATA_FILE)
+
+    # Atualiza o nome do arquivo de dados para o novo
+    global DATA_FILE
+    DATA_FILE = new_file_name
 
 # Função para calcular a taxa de bombeio
 def get_flow_rate(product, company):
@@ -169,5 +178,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
-
 
