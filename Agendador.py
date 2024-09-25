@@ -106,6 +106,10 @@ if not st.session_state.data.empty:
                 edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
                 edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
 
+                # Inicializar o estado de edição se não estiver presente
+                if 'edit_status' not in st.session_state:
+                    st.session_state.edit_status = False
+
                 # Salvar alterações
                 if st.button("Salvar alterações", key=f"save_{index}"):
                     flow_rate = get_flow_rate(edited_product, edited_company)
