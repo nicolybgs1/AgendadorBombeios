@@ -101,6 +101,7 @@ st.download_button(
 )
 
 # Exibir os dados adicionados e permitir edição ou remoção
+# Edição dos dados
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
     for index, row in st.session_state.data.iterrows():
@@ -137,7 +138,7 @@ if not st.session_state.data.empty:
 
                             save_data(st.session_state.data)  # Salvar no CSV
                             st.success("Alterações salvas com sucesso!")
-                            # Remover st.experimental_rerun() aqui
+                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças após a mensagem ser exibida
 
                         else:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -150,6 +151,7 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+
 
     # Gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
