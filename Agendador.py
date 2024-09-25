@@ -128,10 +128,6 @@ if not st.session_state.data.empty:
                             
                             time.sleep(2)  # Pausa de 2 segundos
                             
-                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
-                        except ValueError:
-                            st.error("Formato de hora de início inválido. Use HH:MM.")
-
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
