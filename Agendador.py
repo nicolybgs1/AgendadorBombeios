@@ -86,16 +86,16 @@ if st.button("Adicionar Bombeio"):
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
-# Exibir os dados adicionados
+# Exibir os dados adicionados e permitir edição ou remoção
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
 
-    # Criar uma lista de botões de edição e remoção
     for index, row in st.session_state.data.iterrows():
         cols = st.columns([4, 1, 1])
+
         with cols[0]:
             st.write(row.to_frame().T)
-        
+
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
 
@@ -113,7 +113,7 @@ if not st.session_state.data.empty:
                             start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + edited_start_time)
                             end_datetime, duration_str = calculate_end_time(start_datetime, edited_quota, flow_rate)
 
-                            # Atualizar o DataFrame
+                            # Atualizar o DataFrame com as alterações
                             st.session_state.data.at[index, 'Companhia'] = edited_company
                             st.session_state.data.at[index, 'Produto'] = edited_product
                             st.session_state.data.at[index, 'Cota'] = edited_quota
@@ -122,12 +122,10 @@ if not st.session_state.data.empty:
                             st.session_state.data.at[index, 'Duração'] = duration_str
 
                             save_data(st.session_state.data)  # Salvar no CSV
-                            st.write(st.session_state.data)
                             st.success("Alterações salvas com sucesso!")
+                            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
                         except ValueError:
                             st.error("Formato de hora de início inválido. Use HH:MM.")
-                            
-                        st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
         with cols[2]:
             if st.button(f"Remover", key=f"remove_{index}"):
