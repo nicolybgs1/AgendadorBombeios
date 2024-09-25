@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
-import time
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -99,16 +98,11 @@ if not st.session_state.data.empty:
 
         with cols[1]:
             if st.button(f"Editar", key=f"edit_{index}"):
-
                 # Inputs para edição
                 edited_company = st.text_input("Companhia", value=row['Companhia'], key=f"edit_company_{index}")
                 edited_product = st.text_input("Produto", value=row['Produto'], key=f"edit_product_{index}")
                 edited_quota = st.number_input("Cota", min_value=0, step=1, value=row['Cota'], key=f"edit_quota_{index}")
                 edited_start_time = st.text_input("Hora de Início (HH:MM)", value=row['Início'].strftime('%H:%M'), key=f"edit_start_time_{index}")
-
-                # Inicializar o estado de edição se não estiver presente
-                if 'edit_status' not in st.session_state:
-                    st.session_state.edit_status = False
 
                 # Salvar alterações
                 if st.button("Salvar alterações", key=f"save_{index}"):
@@ -160,3 +154,4 @@ if not st.session_state.data.empty:
     st.altair_chart(chart)
 else:
     st.write("Nenhum bombeio agendado.")
+
