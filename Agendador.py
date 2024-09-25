@@ -86,7 +86,14 @@ if st.button("Adicionar Bombeio"):
             st.error("Formato de hora de início inválido. Use HH:MM.")
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
-
+        
+# Botão para baixar o CSV atualizado
+st.download_button(
+    label="Baixar CSV Atualizado",
+    data=st.session_state.data.to_csv(index=False).encode('utf-8'),
+    file_name='bombeios_agendados.csv',
+    mime='text/csv',
+)
 # Exibir os dados adicionados e permitir edição ou remoção
 if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
