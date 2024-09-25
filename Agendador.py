@@ -66,14 +66,14 @@ if st.button("Adicionar Bombeio"):
     
     if flow_rate:
         try:
-            start_datetime = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
+            start_datetime1 = pd.to_datetime(tomorrow.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             new_bomb = pd.DataFrame([{
                 "Companhia": company,
                 "Produto": product,
                 "Cota": quota,
-                "Início": start_datetime,
+                "Início": start_datetime1,
                 "Fim": end_datetime,
                 "Duração": duration_str
             }])
