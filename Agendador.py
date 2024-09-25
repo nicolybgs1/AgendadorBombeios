@@ -109,7 +109,7 @@ if st.button("Adicionar Bombeio"):
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
             save_data(st.session_state.data)  # Salva os dados no banco de dados
             st.success("Bombeio adicionado com sucesso!")
-            st.experimental_rerun()  # Atualiza a página para refletir as mudanças
+            #st.experimental_rerun()  # Atualiza a página para refletir as mudanças
 
         else:
             st.error("Formato de hora de início inválido. Use HH:MM.")
