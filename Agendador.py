@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
-import time
 
 # Nome do arquivo CSV para armazenamento
 DATA_FILE = "bombeios_agendados.csv"
@@ -101,7 +100,7 @@ if not st.session_state.data.empty:
     df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
 
     # Variável para armazenar a linha em edição
-    edit_index = None
+    edit_index = st.session_state.get('edit_index', None)
 
     # Cria colunas para os dados e os botões
     for index, row in df.iterrows():
@@ -116,9 +115,10 @@ if not st.session_state.data.empty:
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
         with cols[2]:
             if st.button(f"Editar", key=f"edit_{index}"):
-                edit_index = index
+                st.session_state.edit_index = index
+                st.experimental_rerun()
 
-    # Se houver um índice selecionado para edição
+    # Verifica se há uma linha em edição
     if edit_index is not None and edit_index < len(df):
         st.subheader("Editar Bombeio")
     
@@ -147,14 +147,15 @@ if not st.session_state.data.empty:
                 # Salva os dados editados no CSV
                 save_data(st.session_state.data)
     
-                # Exibe a mensagem de sucesso e recarrega a página
+                # Exibe a mensagem de sucesso e limpa o índice de edição
                 st.success("Bombeio editado com sucesso!")
-                time.sleep(10)
+                st.session_state.edit_index = None
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
-    # Criar gráfico de Gantt usando Altair
+# Criar gráfico de Gantt usando Altair
+if not st.session_state.data.empty:
     st.subheader("Gráfico Gantt de Bombeios")
 
     # Converte o DataFrame recalculado em gráfico
