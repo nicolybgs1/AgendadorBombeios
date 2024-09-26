@@ -146,7 +146,7 @@ if not st.session_state.data.empty:
                 st.session_state.data.loc[index] = [edit_company, edit_product, edit_quota, edit_start_time, edit_end_time, edit_duration]
                 save_data(st.session_state.data)  # Salva os dados editados no CSV
                 st.success("Bombeio editado com sucesso!")
-                st.experimental_rerun()  # Atualiza a página
+                #st.experimental_rerun()  # Atualiza a página
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
