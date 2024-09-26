@@ -150,7 +150,7 @@ if not st.session_state.data.empty:
                 # Exibe a mensagem de sucesso e limpa o índice de edição
                 st.success("Bombeio editado com sucesso!")
                 st.session_state.edit_index = None
-                st.experimental_rerun()  # Atualiza a página para refletir a mudança
+                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
