@@ -117,7 +117,8 @@ if not st.session_state.data.empty:
             if st.button(f"Editar", key=f"edit_{index}"):
                 edit_index = index
 
-        if edit_index is not None and edit_index < len(df):
+    # Se houver um índice selecionado para edição
+    if edit_index is not None and edit_index < len(df):
         st.subheader("Editar Bombeio")
     
         # Preenche os campos com os dados atuais da linha selecionada
@@ -151,7 +152,6 @@ if not st.session_state.data.empty:
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
-
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
 
@@ -173,3 +173,4 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
+
