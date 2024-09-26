@@ -149,7 +149,7 @@ if not st.session_state.data.empty:
     
                 # Exibe a mensagem de sucesso e recarrega a página
                 st.success("Bombeio editado com sucesso!")
-                time.sleep(3)
+                time.sleep(10)
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
