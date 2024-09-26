@@ -99,9 +99,12 @@ if not st.session_state.data.empty:
     st.subheader("Dados de Bombeios Agendados")
     df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
 
+    # Variável para armazenar a linha em edição
+    edit_index = None
+
     # Cria colunas para os dados e os botões
     for index, row in df.iterrows():
-        cols = st.columns([4, 1])  # Ajuste a proporção conforme necessário
+        cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
         with cols[0]:
             st.write(row.to_frame().T)  # Exibe a linha do DataFrame
         with cols[1]:
@@ -110,38 +113,41 @@ if not st.session_state.data.empty:
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
                 st.experimental_rerun()  # Atualiza a página para refletir a mudança
+        with cols[2]:
+            if st.button(f"Editar", key=f"edit_{index}"):
+                edit_index = index
 
-    # Recalcular dados após edição
-    recalculated_data = []
-    for index, row in df.iterrows():
-        flow_rate = get_flow_rate(row['Produto'], row['Companhia'])
-        try:
-            # Converte a hora de início para datetime
-            start_datetime = pd.to_datetime(row['Início'])
+    # Se o botão "Editar" for pressionado, exibe os campos para edição
+    if edit_index is not None:
+        st.subheader("Editar Bombeio")
 
-            if flow_rate is not None:
-                # Recalcula hora de fim e duração
-                end_datetime, duration_str = calculate_end_time(start_datetime, row['Cota'], flow_rate)
+        # Preenche os campos com os dados atuais da linha selecionada
+        edit_company = st.text_input("Companhia", value=df.loc[edit_index, "Companhia"])
+        edit_product = st.text_input("Produto", value=df.loc[edit_index, "Produto"])
+        edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "Cota"]))
+        edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "Início"].strftime("%H:%M"))
 
-                # Adiciona os dados recalculados
-                recalculated_data.append({
-                    "Companhia": row['Companhia'],
-                    "Produto": row['Produto'],
-                    "Cota": row['Cota'],
-                    "Início": start_datetime,
-                    "Fim": end_datetime,
-                    "Duração": duration_str
-                })
-            else:
-                # Mantém os dados se o fluxo não for válido
-                recalculated_data.append(row.to_dict())  
-        except Exception as e:
-            st.error(f"Erro ao processar a hora de início: {e}")
-            recalculated_data.append(row.to_dict())  # Mantém os dados se houver erro
+        # Botão para salvar a edição
+        if st.button("Salvar Edição"):
+            try:
+                # Calcula novos valores com base nas edições
+                start_datetime = pd.to_datetime(df.loc[edit_index, "Início"].strftime("%Y-%m-%d") + " " + edit_start_time)
+                flow_rate = get_flow_rate(edit_product, edit_company)
+                end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
-    # Atualiza o estado da sessão com os dados recalculados
-    st.session_state.data = pd.DataFrame(recalculated_data)
-    save_data(st.session_state.data)  # Salva os dados recalculados no CSV
+                # Atualiza a linha com os novos valores
+                st.session_state.data.loc[edit_index, "Companhia"] = edit_company
+                st.session_state.data.loc[edit_index, "Produto"] = edit_product
+                st.session_state.data.loc[edit_index, "Cota"] = edit_quota
+                st.session_state.data.loc[edit_index, "Início"] = start_datetime
+                st.session_state.data.loc[edit_index, "Fim"] = end_datetime
+                st.session_state.data.loc[edit_index, "Duração"] = duration_str
+
+                save_data(st.session_state.data)  # Salva os dados editados no CSV
+                st.success("Bombeio editado com sucesso!")
+                st.experimental_rerun()  # Atualiza a página
+            except ValueError:
+                st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
     # Criar gráfico de Gantt usando Altair
     st.subheader("Gráfico Gantt de Bombeios")
