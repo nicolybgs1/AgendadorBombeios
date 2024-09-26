@@ -112,11 +112,11 @@ if not st.session_state.data.empty:
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
                 save_data(st.session_state.data)  # Salva os dados no CSV
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                st.experimental_rerun()  # Atualiza a página para refletir a mudança
+                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
         with cols[2]:
             if st.button(f"Editar", key=f"edit_{index}"):
                 st.session_state.edit_index = index
-                st.experimental_rerun()
+                #st.experimental_rerun()
 
     # Verifica se há uma linha em edição
     if edit_index is not None and edit_index < len(df):
