@@ -176,4 +176,3 @@ if not st.session_state.data.empty:
 # Mensagem se não houver dados
 else:
     st.write("Nenhum bombeio agendado.")
-
