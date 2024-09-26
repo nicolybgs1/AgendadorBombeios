@@ -3,19 +3,19 @@ import pandas as pd
 import altair as alt
 import os
 
-# Nome do arquivo CSV para armazenamento
-DATA_FILE = "bombeios_agendados.csv"
+# Nome do arquivo Excel para armazenamento
+DATA_FILE = "bombeios_agendados.xlsx"
 
-# Função para carregar dados do CSV
+# Função para carregar dados do Excel
 def load_data():
     if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE, parse_dates=["Início", "Fim"])
+        return pd.read_excel(DATA_FILE, parse_dates=["Início", "Fim"])
     else:
         return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
-# Função para salvar dados no CSV
+# Função para salvar dados no Excel
 def save_data(df):
-    df.to_csv(DATA_FILE, index=False)
+    df.to_excel(DATA_FILE, index=False)
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
@@ -87,7 +87,7 @@ if st.button("Adicionar Bombeio"):
             
             # Adiciona novo bombeio usando pd.concat
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)  # Salva os dados no CSV
+            save_data(st.session_state.data)  # Salva os dados no Excel
             st.success("Bombeio adicionado com sucesso!")
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -109,14 +109,14 @@ if not st.session_state.data.empty:
             st.write(row.to_frame().T)  # Exibe a linha do DataFrame
         with cols[1]:
             if st.button(f"Remover", key=f"remove_{index}"):
+
                 st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
-                save_data(st.session_state.data)  # Salva os dados no CSV
+                save_data(st.session_state.data)  # Salva os dados no Excel
                 st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
+
         with cols[2]:
             if st.button(f"Editar", key=f"edit_{index}"):
                 st.session_state.edit_index = index
-                #st.experimental_rerun()
 
     # Verifica se há uma linha em edição
     if edit_index is not None and edit_index < len(df):
@@ -144,13 +144,13 @@ if not st.session_state.data.empty:
                 st.session_state.data.loc[edit_index, "Fim"] = end_datetime
                 st.session_state.data.loc[edit_index, "Duração"] = duration_str
     
-                # Salva os dados editados no CSV
+                # Salva os dados editados no Excel
                 save_data(st.session_state.data)
     
                 # Exibe a mensagem de sucesso e limpa o índice de edição
                 st.success("Bombeio editado com sucesso!")
                 st.session_state.edit_index = None
-                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
+
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
