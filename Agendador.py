@@ -154,6 +154,10 @@ if not st.session_state.data.empty:
             except ValueError:
                 st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
+# Criar uma nova coluna com o nome da companhia e os horários de início e fim
+st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
+    lambda row: f"{row['Companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
+
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
     st.subheader("Gráfico Gantt de Bombeios")
@@ -164,7 +168,7 @@ if not st.session_state.data.empty:
     chart = alt.Chart(chart_data).mark_bar().encode(
         x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
         x2='Fim:T',
-        y='Companhia:N',
+        y='Companhia_Horarios:N',  # Usar a nova coluna criada
         color='Produto:N',
         tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
     ).properties(
@@ -173,6 +177,3 @@ if not st.session_state.data.empty:
 
     st.altair_chart(chart, use_container_width=True)
 
-# Mensagem se não houver dados
-else:
-    st.write("Nenhum bombeio agendado.")
