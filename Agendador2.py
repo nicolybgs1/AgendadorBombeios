@@ -204,22 +204,31 @@ if not st.session_state.data.empty:
 # Criar uma nova coluna com o nome da companhia e os horários de início e fim
 if not st.session_state.data.empty:
     st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
-        lambda row: f"{row['companhia']} ({row['inicio'].strftime('%H:%M')} - {row['fim'].strftime('%H:%M')})", axis=1
-    )
-    
-    # Exibir gráfico
-    chart = alt.Chart(st.session_state.data).mark_bar().encode(
-        x='inicio:T',
-        y='count():Q',
-        color='produto:N',
-        tooltip=['companhia:N', 'produto:N', 'cota:Q', 'inicio:T', 'fim:T']
-    ).properties(
-        title='Agendamento de Bombeios ao Longo do Tempo'
-    )
-    st.altair_chart(chart, use_container_width=True)
+        lambda row: f"{row['Companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
 
-# Carregar dados para visualização
-st.subheader("Tabela de Bombeios")
-st.dataframe(st.session_state.data)
+# Criar gráfico de Gantt usando Altair
+if not st.session_state.data.empty:
+    st.subheader(f"Gráfico Gantt de Bombeios para {data_selecionada.strftime('%d/%m/%Y')}")
+
+    # Filtrar os dados para o gráfico com base na data selecionada
+    chart_data = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
+    
+    if chart_data.empty:
+        st.write("Nenhum dado para o gráfico na data selecionada.")
+    else:
+        chart = alt.Chart(chart_data).mark_bar().encode(
+            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+            x2='Fim:T',
+            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
+            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        ).properties(
+            title='Bombeios Agendados',
+            width=800,
+            height=400
+        )
+        st.altair_chart(chart, use_container_width=True)
+else:
+    st.write("Não há nenhum bombeio agendado.")
 
 
