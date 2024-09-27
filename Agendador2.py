@@ -1,21 +1,48 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import os
+import sqlite3
 
-# Nome do arquivo CSV para armazenamento
-DATA_FILE = "bombeios_agendados.csv"
+# Nome do arquivo SQLite para armazenamento
+DATABASE_FILE = "bombeios_agendados.db"
 
-# Função para carregar dados do CSV
+# Função para conectar ao banco de dados SQLite
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE_FILE)
+    return conn
+
+# Função para criar a tabela, se não existir
+def create_table():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS bombeios (
+            id INTEGER PRIMARY KEY,
+            Companhia TEXT,
+            Produto TEXT,
+            Cota INTEGER,
+            Início DATETIME,
+            Fim DATETIME,
+            Duração TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Função para carregar dados do banco de dados
 def load_data():
-    if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE, parse_dates=["Início", "Fim"])
-    else:
-        return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
+    conn = get_db_connection()
+    df = pd.read_sql_query("SELECT * FROM bombeios", conn, parse_dates=["Início", "Fim"])
+    conn.close()
+    return df
 
-# Função para salvar dados no CSV
+# Função para salvar dados no banco de dados
 def save_data(df):
-    df.to_csv(DATA_FILE, index=False)
+    conn = get_db_connection()
+    df.to_sql('bombeios', conn, if_exists='replace', index=False)
+    conn.close()
+
+# Cria a tabela no banco de dados
+create_table()
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
@@ -92,9 +119,9 @@ if st.button("Adicionar Bombeio"):
                 "Duração": duration_str
             }])
             
-            # Adiciona novo bombeio usando pd.concat
+            # Adiciona novo bombeio ao banco de dados
             st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)  # Salva os dados no CSV
+            save_data(st.session_state.data)  # Salva os dados no banco de dados
             st.success("Bombeio adicionado com sucesso!")
         except ValueError:
             st.error("Formato de hora de início inválido. Use HH:MM.")
@@ -121,8 +148,14 @@ if not st.session_state.data.empty:
                 st.write(row.to_frame().T)  # Exibe a linha do DataFrame
             with cols[1]:
                 if st.button(f"Remover", key=f"remove_{index}"):
+
+                    # Remove o bombeio do banco de dados
+                    conn = get_db_connection()
+                    conn.execute("DELETE FROM bombeios WHERE id=?", (row['id'],))
+                    conn.commit()
+                    conn.close()
+
                     st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
-                    save_data(st.session_state.data)  # Salva os dados no CSV
                     st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
             with cols[2]:
                 if st.button(f"Editar", key=f"edit_{index}"):
@@ -154,14 +187,21 @@ if not st.session_state.data.empty:
                     st.session_state.data.loc[edit_index, "Fim"] = end_datetime
                     st.session_state.data.loc[edit_index, "Duração"] = duration_str
 
-                    # Salva os dados editados no CSV
-                    save_data(st.session_state.data)
+                    # Atualiza os dados no banco de dados
+                    conn = get_db_connection()
+                    conn.execute("""
+                        UPDATE bombeios
+                        SET Companhia = ?, Produto = ?, Cota = ?, Início = ?, Fim = ?, Duração = ?
+                        WHERE id = ?
+                    """, (edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str, df.loc[edit_index, "id"]))
+                    conn.commit()
+                    conn.close()
 
-                    # Exibe a mensagem de sucesso e limpa o índice de edição
                     st.success("Bombeio editado com sucesso!")
-                    st.session_state.edit_index = None
-                except ValueError:
-                    st.error("Erro ao editar os dados. Verifique os valores inseridos.")
+                    st.session_state.edit_index = None  # Limpa a edição após salvar
+                except Exception as e:
+                    st.error(f"Erro ao editar o bombeio: {e}")
+
 
 # Criar uma nova coluna com o nome da companhia e os horários de início e fim
 if not st.session_state.data.empty:
