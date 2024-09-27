@@ -169,18 +169,23 @@ st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
 
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
-    st.subheader("Gráfico Gantt de Bombeios")
+    st.subheader(f"Gráfico Gantt de Bombeios para {data_selecionada.strftime('%d/%m/%Y')}")
 
-    # Converte o DataFrame recalculado em gráfico
-    chart_data = st.session_state.data
+    # Filtrar os dados para o gráfico com base na data selecionada
+    chart_data = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
     
-    chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', title='Horário de Início'),
-        x2='Fim:T',
-        y=alt.Y('Companhia_Horarios:N', title='Companhia e Horários'),
-        color=alt.Color('Produto:N', title='Produto')
-    ).properties(
-        title="Agendamento de Bombeios"
-    )
-    
-    st.altair_chart(chart, use_container_width=True)
+    if chart_data.empty:
+        st.write("Nenhum dado para o gráfico na data selecionada.")
+    else:
+        chart = alt.Chart(chart_data).mark_bar().encode(
+            x=alt.X('Início:T', title='Horário de Início'),
+            x2='Fim:T',
+            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        ).properties(
+            title='Bombeios Agendados',
+            width=800,
+            height=400
+        )
+        st.altair_chart(chart, use_container_width=True)
+
