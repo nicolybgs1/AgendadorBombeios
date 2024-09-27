@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 import sqlite3
 
 # Nome do arquivo SQLite para armazenamento
@@ -97,7 +96,7 @@ if "data" not in st.session_state:
 
 # Verificar se o DataFrame está vazio e inicializá-lo se necessário
 if st.session_state.data is None or not isinstance(st.session_state.data, pd.DataFrame):
-    st.session_state.data = pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
+    st.session_state.data = pd.DataFrame(columns=["id", "Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
 # Cálculo inicial de fim e duração
 if st.button("Adicionar Bombeio"):
@@ -187,13 +186,13 @@ if not st.session_state.data.empty:
                     st.session_state.data.loc[edit_index, "Fim"] = end_datetime
                     st.session_state.data.loc[edit_index, "Duração"] = duration_str
 
-                    # Atualiza os dados no banco de dados
+                    # Salva as alterações no banco de dados
                     conn = get_db_connection()
-                    conn.execute("""
+                    conn.execute('''
                         UPDATE bombeios
-                        SET Companhia = ?, Produto = ?, Cota = ?, Início = ?, Fim = ?, Duração = ?
-                        WHERE id = ?
-                    """, (edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str, df.loc[edit_index, "id"]))
+                        SET Companhia=?, Produto=?, Cota=?, Início=?, Fim=?, Duração=?
+                        WHERE id=?
+                    ''', (edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str, df.loc[edit_index, "id"]))
                     conn.commit()
                     conn.close()
 
