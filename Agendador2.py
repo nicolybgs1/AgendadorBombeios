@@ -149,8 +149,8 @@ if not st.session_state.data.empty:
             edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "inicio"].strftime("%H:%M"))
 
         if st.button("Salvar Edição"):
-    try:
-        start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}")
+            try:
+                start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}")
         flow_rate = get_flow_rate(edit_product, edit_company)
         
         # Verifica se o fluxo é válido
