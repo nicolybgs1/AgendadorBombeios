@@ -240,7 +240,3 @@ if not st.session_state.data.empty:
         st.altair_chart(chart, use_container_width=True)
 else:
     st.write("Não há nenhum bombeio agendado.")
-
-# Carregar dados para visualização
-st.subheader("Tabela de Bombeios")
-st.dataframe(st.session_state.data)
