@@ -164,8 +164,9 @@ if not st.session_state.data.empty:
                     st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
 # Criar uma nova coluna com o nome da companhia e os horários de início e fim
-st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
-    lambda row: f"{row['Companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
+if not st.session_state.data.empty:
+    st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
+        lambda row: f"{row['Companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
 
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
