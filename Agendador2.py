@@ -160,6 +160,7 @@ if not st.session_state.data.empty:
                     st.session_state.edit_index = index
 
         # Verifica se há uma linha em edição
+        edit_index = st.session_state.get('edit_index', None)  # Obtém o índice da linha em edição
         if edit_index is not None and edit_index < len(df):
             st.subheader("Editar Bombeio")
 
@@ -177,7 +178,15 @@ if not st.session_state.data.empty:
                     flow_rate = get_flow_rate(edit_product, edit_company)
                     end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
-                    # Atualiza a linha no banco de dados
+                    # Atualiza a linha com os novos valores
+                    st.session_state.data.loc[edit_index, "companhia"] = edit_company
+                    st.session_state.data.loc[edit_index, "produto"] = edit_product
+                    st.session_state.data.loc[edit_index, "cota"] = edit_quota
+                    st.session_state.data.loc[edit_index, "inicio"] = start_datetime
+                    st.session_state.data.loc[edit_index, "fim"] = end_datetime
+                    st.session_state.data.loc[edit_index, "duracao"] = duration_str
+
+                    # Salva os dados editados no banco de dados
                     conn = sqlite3.connect(DB_FILE)
                     cursor = conn.cursor()
                     cursor.execute('''
@@ -191,15 +200,21 @@ if not st.session_state.data.empty:
                         start_datetime.strftime("%Y-%m-%d %H:%M"),  # Converte para string
                         end_datetime.strftime("%Y-%m-%d %H:%M"),    # Converte para string
                         duration_str,
-                        df.loc[edit_index, "id"]
+                        df.loc[edit_index, "id"]  # ID da linha a ser atualizada
                     ))
                     conn.commit()
                     conn.close()
+
+                    # Exibe a mensagem de sucesso e limpa o índice de edição
                     st.success("Bombeio editado com sucesso!")
                     st.session_state.edit_index = None
-                    st.session_state.data = load_data()  # Recarrega os dados após editar
                 except ValueError:
                     st.error("Erro ao editar os dados. Verifique os valores inseridos.")
+
+# Criar uma nova coluna com o nome da companhia e os horários de início e fim
+if not st.session_state.data.empty:
+    st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
+        lambda row: f"{row['companhia']} ({row['inicio'].strftime('%H:%M')} - {row['fim'].strftime('%H:%M')})", axis=1)
 
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
@@ -214,7 +229,7 @@ if not st.session_state.data.empty:
         chart = alt.Chart(chart_data).mark_bar().encode(
             x=alt.X('inicio:T', axis=alt.Axis(format='%H:%M')),
             x2='fim:T',
-            y=alt.Y('companhia:N', title='Companhia', sort='-x'),
+            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
             color=alt.Color('produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
             tooltip=['companhia', 'produto', 'cota', 'inicio', 'fim', 'duracao']
         ).properties(
