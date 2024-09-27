@@ -32,13 +32,6 @@ def load_data():
     conn.close()
     return df
 
-# Inicializar a aplicação
-create_table()  # Cria a tabela se não existir
-
-# Carregar os dados na inicialização
-if 'data' not in st.session_state:
-    st.session_state.data = load_data()  # Carrega os dados do banco de dados
-
 # Exibir dados na interface
 st.dataframe(st.session_state.data)
 
@@ -92,6 +85,10 @@ def calculate_end_time(start_datetime, quota, flow_rate):
 
 # Cria a tabela no início do aplicativo
 create_table()
+
+# Carregar os dados na inicialização
+if 'data' not in st.session_state:
+    st.session_state.data = load_data()  # Carrega os dados do banco de dados
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
