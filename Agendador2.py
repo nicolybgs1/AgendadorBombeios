@@ -90,7 +90,7 @@ init_db()
 
 # Configura a página
 st.set_page_config(layout="wide")
-st.title("Agendador de Bombeios com SQLite")
+st.title("Agendador de Bombeios")
 
 # Seletor de data
 data_selecionada = st.date_input("Selecione uma data", pd.to_datetime("today"))
