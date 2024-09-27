@@ -16,7 +16,7 @@ def create_table():
     conn = get_db_connection()
     conn.execute('''
         CREATE TABLE IF NOT EXISTS bombeios (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             Companhia TEXT,
             Produto TEXT,
             Cota INTEGER,
@@ -175,7 +175,7 @@ if not st.session_state.data.empty:
             if st.button("Salvar Edição"):
                 try:
                     # Calcula novos valores com base nas edições
-                    start_datetime = pd.to_datetime(df.loc[edit_index, "Início"].strftime("%Y-%m-%d") + " " + edit_start_time)
+                    start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + edit_start_time)
                     flow_rate = get_flow_rate(edit_product, edit_company)
                     end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
