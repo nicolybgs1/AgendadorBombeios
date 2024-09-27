@@ -34,14 +34,19 @@ def load_data():
 
 # Função para salvar dados no SQLite
 def save_data(company, product, quota, start_time, end_time, duration_str):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO bombeios (companhia, produto, cota, inicio, fim, duracao)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (company, product, quota, start_time, end_time, duration_str))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO bombeios (companhia, produto, cota, inicio, fim, duracao)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (company, product, quota, start_time, end_time, duration_str))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Erro ao salvar dados no banco de dados: {e}")
+    finally:
+        conn.close()
+
 
 # Função para remover um bombeio
 def remove_data(bombeio_id):
