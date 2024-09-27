@@ -32,6 +32,16 @@ def load_data():
     conn.close()
     return df
 
+# Inicializar a aplicação
+create_table()  # Cria a tabela se não existir
+
+# Carregar os dados na inicialização
+if 'data' not in st.session_state:
+    st.session_state.data = load_data()  # Carrega os dados do banco de dados
+
+# Exibir dados na interface
+st.dataframe(st.session_state.data)
+
 # Função para salvar dados no banco de dados
 def save_data(company, product, quota, start_time, end_time, duration_str):
     try:
