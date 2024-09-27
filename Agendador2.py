@@ -205,10 +205,16 @@ if not st.session_state.data.empty:
     else:
         chart = alt.Chart(chart_data).mark_bar().encode(
             x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-            x2='fim:T',
-            y='Companhia_Horarios:N',
-            tooltip=['companhia', 'produto', 'cota', 'inicio', 'fim', 'duracao']
-        ).properties(width=700, height=400)
-
-        st.altair_chart(chart)
+            x2='Fim:T',
+            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
+            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
+            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+        ).properties(
+            title='Bombeios Agendados',
+            width=800,
+            height=400
+        )
+        st.altair_chart(chart, use_container_width=True)
+else:
+    st.write("Não há nenhum bombeio agendado.")
 
