@@ -181,7 +181,7 @@ if not st.session_state.data.empty:
             x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
             x2='Fim:T',
             y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
-            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10'))
+            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
             tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
         ).properties(
             title='Bombeios Agendados',
