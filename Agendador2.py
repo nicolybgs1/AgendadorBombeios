@@ -189,3 +189,5 @@ if not st.session_state.data.empty:
             height=400
         )
         st.altair_chart(chart, use_container_width=True)
+else:
+    st.write("Não há nenhum bombeio agendado.")
