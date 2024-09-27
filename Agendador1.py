@@ -178,7 +178,7 @@ if not st.session_state.data.empty:
         st.write("Nenhum dado para o gráfico na data selecionada.")
     else:
         chart = alt.Chart(chart_data).mark_bar().encode(
-            x=alt.X('Início:T', title='Horário de Início'),
+            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
             x2='Fim:T',
             y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
             tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
