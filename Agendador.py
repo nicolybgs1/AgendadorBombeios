@@ -50,7 +50,7 @@ def get_flow_rate(product, company):
         return 560
     elif product == "QAV":
         return 240
-    elif product == "OC1A":
+    elif product == "OC":
         return 300
     else:
         return None  # Caso o produto não esteja definido
