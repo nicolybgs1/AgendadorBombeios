@@ -139,63 +139,58 @@ if not st.session_state.data.empty:
                 if st.button(f"Editar", key=f"edit_{index}"):
                     st.session_state.edit_index = index
 
-        # Edição de dados
-        edit_index = st.session_state.get('edit_index', None)
-        if edit_index is not None and edit_index < len(df):
-            st.subheader("Editar Bombeio")
-            edit_company = st.text_input("Companhia", value=df.loc[edit_index, "companhia"])
-            edit_product = st.text_input("Produto", value=df.loc[edit_index, "produto"])
-            edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "cota"]))
-            edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "inicio"].strftime("%H:%M"))
+# Edição de dados
+edit_index = st.session_state.get('edit_index', None)
+if edit_index is not None and edit_index < len(df):
+    st.subheader("Editar Bombeio")
+    edit_company = st.text_input("Companhia", value=df.loc[edit_index, "companhia"])
+    edit_product = st.text_input("Produto", value=df.loc[edit_index, "produto"])
+    edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "cota"]))
+    edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "inicio"].strftime("%H:%M"))
 
-            if st.button("Salvar Edição"):
-                try:
-                    start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}")
-                    flow_rate = get_flow_rate(edit_product, edit_company)
+    if st.button("Salvar Edição"):
+        try:
+            # Converte a hora de início usando apenas o formato HH:MM
+            start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}", format="%Y-%m-%d %H:%M")
 
-                    # Verifica se o fluxo é válido
-                    if flow_rate is None:
-                        st.error("Produto ou Companhia inválidos. Verifique os valores.")
-                    else:
-                        end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
+            flow_rate = get_flow_rate(edit_product, edit_company)
 
-                        # Mostra os valores que estão sendo usados para depuração
-                        st.write("Valores para atualização:")
-                        st.write(f"Companhia: {edit_company}")
-                        st.write(f"Produto: {edit_product}")
-                        st.write(f"Cota: {edit_quota}")
-                        st.write(f"Início: {start_datetime}")
-                        st.write(f"Fim: {end_datetime}")
-                        st.write(f"Duração: {duration_str}")
+            if flow_rate is None:
+                st.error("Produto ou Companhia inválidos. Verifique os valores.")
+            else:
+                end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
-                        with sqlite3.connect(DB_FILE) as conn:
-                            cursor = conn.cursor()
-                            cursor.execute('''
-                                UPDATE bombeios 
-                                SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
-                                WHERE id = ?
-                            ''', (
-                                edit_company,
-                                edit_product,
-                                edit_quota,
-                                start_datetime.strftime("%Y-%m-%d %H:%M"),
-                                end_datetime.strftime("%Y-%m-%d %H:%M"),
-                                duration_str,
-                                df.loc[edit_index, "id"]
-                            ))
-                            conn.commit()
+                with sqlite3.connect(DB_FILE) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute('''
+                        UPDATE bombeios 
+                        SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
+                        WHERE id = ?
+                    ''', (
+                        edit_company,
+                        edit_product,
+                        edit_quota,
+                        start_datetime.strftime("%Y-%m-%d %H:%M"),
+                        end_datetime.strftime("%Y-%m-%d %H:%M"),
+                        duration_str,
+                        df.loc[edit_index, "id"]
+                    ))
+                    conn.commit()
 
-                        # Atualiza o DataFrame na sessão
-                        st.session_state.data.loc[edit_index] = [
-                            edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str
-                        ]
+                # Atualiza o DataFrame na sessão
+                st.session_state.data.at[edit_index, "companhia"] = edit_company
+                st.session_state.data.at[edit_index, "produto"] = edit_product
+                st.session_state.data.at[edit_index, "cota"] = edit_quota
+                st.session_state.data.at[edit_index, "inicio"] = start_datetime
+                st.session_state.data.at[edit_index, "fim"] = end_datetime
+                st.session_state.data.at[edit_index, "duracao"] = duration_str
 
-                        st.success("Bombeio editado com sucesso!")
-                        st.session_state.edit_index = None
-                except ValueError as ve:
-                    st.error(f"Erro de valor: {ve}. Verifique os valores inseridos.")
-                except Exception as e:
-                    st.error(f"Erro ao editar os dados: {e}")
+                st.success("Bombeio editado com sucesso!")
+                st.session_state.edit_index = None
+        except ValueError as ve:
+            st.error(f"Erro de valor: {ve}. Verifique os valores inseridos.")
+        except Exception as e:
+            st.error(f"Erro ao editar os dados: {e}")
 
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
