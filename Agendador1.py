@@ -26,8 +26,7 @@ st.title("Agendador de Bombeios")
 # Adicionar um seletor de data para o filtro
 data_selecionada = st.date_input("Selecione uma data", pd.to_datetime("today"))
 
-# Exibir a data de hoje ou a selecionada no início da página
-today = pd.to_datetime("today")
+# Exibir a data selecionada no início da página
 st.markdown(f"**Data Selecionada:** {data_selecionada.strftime('%d/%m/%Y')}")
 
 # Lista de opções para Companhia e Produto
@@ -79,7 +78,8 @@ if st.button("Adicionar Bombeio"):
     
     if flow_rate:
         try:
-            start_datetime = pd.to_datetime(today.strftime("%Y-%m-%d") + " " + start_time)
+            # Combina a data selecionada com a hora de início inserida
+            start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + start_time)
             end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
             # Cria novo DataFrame com os dados do bombeio
@@ -175,14 +175,12 @@ if not st.session_state.data.empty:
     chart_data = st.session_state.data
     
     chart = alt.Chart(chart_data).mark_bar().encode(
-        x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
+        x=alt.X('Início:T', title='Horário de Início'),
         x2='Fim:T',
-        y='Companhia_Horarios:N',  # Usar a nova coluna criada
-        color='Produto:N',
-        tooltip=['Companhia', 'Produto', 'Cota', 'Início:T', 'Fim:T', 'Duração']
+        y=alt.Y('Companhia_Horarios:N', title='Companhia e Horários'),
+        color=alt.Color('Produto:N', title='Produto')
     ).properties(
-        title='Gráfico Gantt'
+        title="Agendamento de Bombeios"
     )
     
     st.altair_chart(chart, use_container_width=True)
-
