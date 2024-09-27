@@ -148,38 +148,55 @@ if not st.session_state.data.empty:
             edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "cota"]))
             edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "inicio"].strftime("%H:%M"))
 
-            if st.button("Salvar Edição"):
-                try:
-                    start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}")
-                    flow_rate = get_flow_rate(edit_product, edit_company)
-                    end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
+        if st.button("Salvar Edição"):
+    try:
+        start_datetime = pd.to_datetime(f"{data_selecionada} {edit_start_time}")
+        flow_rate = get_flow_rate(edit_product, edit_company)
+        
+        # Verifica se o fluxo é válido
+        if flow_rate is None:
+            st.error("Produto ou Companhia inválidos. Verifique os valores.")
+            return
 
-                    with sqlite3.connect(DB_FILE) as conn:
-                        cursor = conn.cursor()
-                        cursor.execute('''
-                            UPDATE bombeios 
-                            SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
-                            WHERE id = ?
-                        ''', (
-                            edit_company,
-                            edit_product,
-                            edit_quota,
-                            start_datetime.strftime("%Y-%m-%d %H:%M"),
-                            end_datetime.strftime("%Y-%m-%d %H:%M"),
-                            duration_str,
-                            df.loc[edit_index, "id"]
-                        ))
-                        conn.commit()
+        end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
-                    # Atualiza o DataFrame na sessão
-                    st.session_state.data.loc[edit_index] = [
-                        edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str
-                    ]
+        # Mostra os valores que estão sendo usados para depuração
+        st.write("Valores para atualização:")
+        st.write(f"Companhia: {edit_company}")
+        st.write(f"Produto: {edit_product}")
+        st.write(f"Cota: {edit_quota}")
+        st.write(f"Início: {start_datetime}")
+        st.write(f"Fim: {end_datetime}")
+        st.write(f"Duração: {duration_str}")
 
-                    st.success("Bombeio editado com sucesso!")
-                    st.session_state.edit_index = None
-                except ValueError:
-                    st.error("Erro ao editar os dados. Verifique os valores inseridos.")
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE bombeios 
+                SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
+                WHERE id = ?
+            ''', (
+                edit_company,
+                edit_product,
+                edit_quota,
+                start_datetime.strftime("%Y-%m-%d %H:%M"),
+                end_datetime.strftime("%Y-%m-%d %H:%M"),
+                duration_str,
+                df.loc[edit_index, "id"]
+            ))
+            conn.commit()
+
+        # Atualiza o DataFrame na sessão
+        st.session_state.data.loc[edit_index] = [
+            edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str
+        ]
+
+        st.success("Bombeio editado com sucesso!")
+        st.session_state.edit_index = None
+    except ValueError as ve:
+        st.error(f"Erro de valor: {ve}. Verifique os valores inseridos.")
+    except Exception as e:
+        st.error(f"Erro ao editar os dados: {e}")
 
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
