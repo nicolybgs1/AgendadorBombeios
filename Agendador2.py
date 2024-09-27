@@ -170,46 +170,46 @@ if not st.session_state.data.empty:
             edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "cota"]))
             edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "inicio"].strftime("%H:%M"))
 
-            # Botão para salvar a edição
-            if st.button("Salvar Edição"):
-                try:
-                    # Calcula novos valores com base nas edições
-                    start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + edit_start_time)
-                    flow_rate = get_flow_rate(edit_product, edit_company)
-                    end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
+# Botão para salvar a edição
+if st.button("Salvar Edição"):
+    try:
+        # Calcula novos valores com base nas edições
+        start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + edit_start_time)
+        flow_rate = get_flow_rate(edit_product, edit_company)
+        end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
 
-                    # Atualiza a linha com os novos valores
-                    st.session_state.data.loc[edit_index, "companhia"] = edit_company
-                    st.session_state.data.loc[edit_index, "produto"] = edit_product
-                    st.session_state.data.loc[edit_index, "cota"] = edit_quota
-                    st.session_state.data.loc[edit_index, "inicio"] = start_datetime
-                    st.session_state.data.loc[edit_index, "fim"] = end_datetime
-                    st.session_state.data.loc[edit_index, "duracao"] = duration_str
+        # Salva os dados editados no banco de dados
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE bombeios 
+            SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
+            WHERE id = ?
+        ''', (
+            edit_company,
+            edit_product,
+            edit_quota,
+            start_datetime.strftime("%Y-%m-%d %H:%M"),  # Converte para string
+            end_datetime.strftime("%Y-%m-%d %H:%M"),    # Converte para string
+            duration_str,
+            df.loc[edit_index, "id"]  # ID da linha a ser atualizada
+        ))
+        conn.commit()
+        conn.close()
 
-                    # Salva os dados editados no banco de dados
-                    conn = sqlite3.connect(DB_FILE)
-                    cursor = conn.cursor()
-                    cursor.execute('''
-                        UPDATE bombeios 
-                        SET companhia = ?, produto = ?, cota = ?, inicio = ?, fim = ?, duracao = ?
-                        WHERE id = ?
-                    ''', (
-                        edit_company,
-                        edit_product,
-                        edit_quota,
-                        start_datetime.strftime("%Y-%m-%d %H:%M"),  # Converte para string
-                        end_datetime.strftime("%Y-%m-%d %H:%M"),    # Converte para string
-                        duration_str,
-                        df.loc[edit_index, "id"]  # ID da linha a ser atualizada
-                    ))
-                    conn.commit()
-                    conn.close()
+        # Atualiza o DataFrame no estado da sessão
+        st.session_state.data.loc[edit_index, "companhia"] = edit_company
+        st.session_state.data.loc[edit_index, "produto"] = edit_product
+        st.session_state.data.loc[edit_index, "cota"] = edit_quota
+        st.session_state.data.loc[edit_index, "inicio"] = start_datetime
+        st.session_state.data.loc[edit_index, "fim"] = end_datetime
+        st.session_state.data.loc[edit_index, "duracao"] = duration_str
 
-                    # Exibe a mensagem de sucesso e limpa o índice de edição
-                    st.success("Bombeio editado com sucesso!")
-                    st.session_state.edit_index = None
-                except ValueError:
-                    st.error("Erro ao editar os dados. Verifique os valores inseridos.")
+        # Exibe a mensagem de sucesso e limpa o índice de edição
+        st.success("Bombeio editado com sucesso!")
+        st.session_state.edit_index = None
+    except ValueError:
+        st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
 # Criar uma nova coluna com o nome da companhia e os horários de início e fim
 if not st.session_state.data.empty:
