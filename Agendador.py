@@ -27,9 +27,13 @@ st.title("Agendador de Bombeios")
 tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
 
-# Inputs para coletar os dados
-company = st.text_input("Companhia")
-product = st.text_input("Produto")
+# Lista de opções para Companhia e Produto
+company_options = ["POOL", "VIBRA", "SIM", "PTS", "FIC", "CJ", "TCT", "TRR", "TSO", "RM", "OPL", "CRS", "TOR", "DM", "SHE"]
+product_options = ["GAS", "S10", "S500", "QAV", "OC"]
+
+# Inputs para coletar os dados com listas suspensas
+company = st.selectbox("Companhia", company_options)  # Selectbox para escolher a companhia
+product = st.selectbox("Produto", product_options)  # Selectbox para escolher o produto
 quota = st.number_input("Cota", min_value=0, step=1)
 start_time = st.text_input("Hora de Início (HH:MM)", "00:00")
 
