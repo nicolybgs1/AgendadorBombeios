@@ -88,6 +88,19 @@ create_table()
 
 # Carregar os dados na inicialização
 if 'data' not in st.session_state:
+    try:
+        st.session_state.data = load_data()  # Carrega os dados do banco de dados
+    except Exception as e:
+        st.error(f"Erro ao carregar dados: {e}")
+
+# Verificar se os dados foram carregados corretamente
+if 'data' in st.session_state and st.session_state.data is not None:
+    st.dataframe(st.session_state.data)  # Exibe o DataFrame na interface
+else:
+    st.warning("Nenhum dado disponível para exibir.")
+
+# Carregar os dados na inicialização
+if 'data' not in st.session_state:
     st.session_state.data = load_data()  # Carrega os dados do banco de dados
 
 # Configura o layout da página
