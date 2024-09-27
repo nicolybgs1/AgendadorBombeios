@@ -28,7 +28,7 @@ tomorrow = pd.to_datetime("today") + pd.Timedelta(days=1)
 st.markdown(f"**Data:** {tomorrow.strftime('%d/%m/%Y')}")
 
 # Lista de opções para Companhia e Produto
-company_options = ["POOL", "VIBRA", "SIM", "PTS", "FIC", "CJ", "TCT", "TRR", "TSO", "RM", "OPL", "CRS", "TOR", "DM", "SHE"]
+company_options = ["POO", "PET", "SIM", "PTS", "FIC", "CJ", "TCT", "TRR", "TSO", "RM", "OPL", "CRS", "TOR", "DM", "SHE"]
 product_options = ["GAS", "S10", "S500", "QAV", "OC"]
 
 # Inputs para coletar os dados com listas suspensas
