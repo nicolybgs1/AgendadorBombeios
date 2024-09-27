@@ -201,27 +201,22 @@ if not st.session_state.data.empty:
                 except ValueError:
                     st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
-# Criar uma nova coluna com o nome da companhia e os horários de início e fim
-if not st.session_state.data.empty:
-    st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
-        lambda row: f"{row['Companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
-
 # Criar gráfico de Gantt usando Altair
 if not st.session_state.data.empty:
     st.subheader(f"Gráfico Gantt de Bombeios para {data_selecionada.strftime('%d/%m/%Y')}")
 
     # Filtrar os dados para o gráfico com base na data selecionada
-    chart_data = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
+    chart_data = st.session_state.data[st.session_state.data["inicio"].dt.normalize() == pd.to_datetime(data_selecionada)]
     
     if chart_data.empty:
         st.write("Nenhum dado para o gráfico na data selecionada.")
     else:
         chart = alt.Chart(chart_data).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-            x2='Fim:T',
-            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
-            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
-            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+            x=alt.X('inicio:T', axis=alt.Axis(format='%H:%M')),
+            x2='fim:T',
+            y=alt.Y('companhia:N', title='Companhia', sort='-x'),
+            color=alt.Color('produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
+            tooltip=['companhia', 'produto', 'cota', 'inicio', 'fim', 'duracao']
         ).properties(
             title='Bombeios Agendados',
             width=800,
@@ -231,4 +226,6 @@ if not st.session_state.data.empty:
 else:
     st.write("Não há nenhum bombeio agendado.")
 
-
+# Carregar dados para visualização
+st.subheader("Tabela de Bombeios")
+st.dataframe(st.session_state.data)
