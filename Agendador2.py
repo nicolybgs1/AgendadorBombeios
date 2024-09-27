@@ -132,8 +132,7 @@ if st.button("Adicionar Bombeio"):
 # Exibir os dados adicionados filtrados pela data selecionada
 if not st.session_state.data.empty:
     st.subheader(f"Dados de Bombeios Agendados para {data_selecionada.strftime('%d/%m/%Y')}")
-    
-    # Filtrar os dados com base na data selecionada
+
     df = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
 
     if df.empty:
@@ -149,7 +148,6 @@ if not st.session_state.data.empty:
                 st.write(row.to_frame().T)  # Exibe a linha do DataFrame
             with cols[1]:
                 if st.button(f"Remover", key=f"remove_{index}"):
-
                     # Remove o bombeio do banco de dados
                     conn = get_db_connection()
                     conn.execute("DELETE FROM bombeios WHERE id=?", (row['id'],))
@@ -175,7 +173,6 @@ if not st.session_state.data.empty:
             # Botão para salvar a edição
             if st.button("Salvar Edição"):
                 try:
-                    # Calcula novos valores com base nas edições
                     start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + edit_start_time)
                     flow_rate = get_flow_rate(edit_product, edit_company)
                     end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
@@ -194,7 +191,7 @@ if not st.session_state.data.empty:
                         UPDATE bombeios
                         SET Companhia=?, Produto=?, Cota=?, Início=?, Fim=?, Duração=?
                         WHERE id=?
-                    ''', (edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str, df.loc[edit_index, "id"]))
+                    ''', (edit_company, edit_product, edit_quota, start_datetime, end_datetime, duration_str, row['id']))
                     conn.commit()
                     conn.close()
 
