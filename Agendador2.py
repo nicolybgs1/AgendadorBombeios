@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import altair as alt
+import os
 
 # Nome do arquivo SQLite para armazenamento
 DATABASE_FILE = "bombeios_agendados.db"
