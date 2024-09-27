@@ -192,29 +192,39 @@ if edit_index is not None and edit_index < len(df):
         except Exception as e:
             st.error(f"Erro ao editar os dados: {e}")
 
-# Criar gráfico de Gantt usando Altair
+# Verifica se há dados no estado da sessão
 if not st.session_state.data.empty:
+    # Garantir que as colunas 'Início' e 'Fim' sejam datetime
+    st.session_state.data['Início'] = pd.to_datetime(st.session_state.data['Início'], errors='coerce')
+    st.session_state.data['Fim'] = pd.to_datetime(st.session_state.data['Fim'], errors='coerce')
+
+    # Criar coluna de horários da companhia
     st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
-        lambda row: f"{row['companhia']} ({row['inicio'].strftime('%H:%M')} - {row['fim'].strftime('%H:%M')})", axis=1)
+        lambda row: f"{row['companhia']} ({row['Início'].strftime('%H:%M')} - {row['Fim'].strftime('%H:%M')})", axis=1)
 
     st.subheader(f"Gráfico Gantt de Bombeios para {data_selecionada.strftime('%d/%m/%Y')}")
-    chart_data = st.session_state.data[st.session_state.data["inicio"].dt.normalize() == pd.to_datetime(data_selecionada)]
-    
+    chart_data = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
+
+    # Verifica se chart_data está vazio
     if chart_data.empty:
         st.write("Nenhum dado para o gráfico na data selecionada.")
     else:
-        chart = alt.Chart(chart_data).mark_bar().encode(
-            x=alt.X('Início:T', axis=alt.Axis(format='%H:%M')),
-            x2='Fim:T',
-            y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
-            color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
-            tooltip=['Companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
-        ).properties(
-            title='Bombeios Agendados',
-            width=800,
-            height=400
-        )
-        st.altair_chart(chart, use_container_width=True)
+        # Criação do gráfico
+        try:
+            chart = alt.Chart(chart_data).mark_bar().encode(
+                x=alt.X('Início:T', title='Início', axis=alt.Axis(format='%H:%M')),
+                x2='Fim:T',
+                y=alt.Y('Companhia_Horarios:N', title='Companhia', sort='-x'),
+                color=alt.Color('Produto:N', title='Produto', scale=alt.Scale(scheme='category10')),
+                tooltip=['companhia', 'Produto', 'Cota', 'Início', 'Fim', 'Duração']
+            ).properties(
+                title='Bombeios Agendados',
+                width=800,
+                height=400
+            )
+            st.altair_chart(chart, use_container_width=True)
+        except Exception as e:
+            st.error(f"Ocorreu um erro ao criar o gráfico: {e}")
 else:
-    st.write("Não há nenhum bombeio agendado.")
+    st.write("Não há dados disponíveis.")
 
