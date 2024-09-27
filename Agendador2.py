@@ -44,7 +44,7 @@ def get_flow_rate(product, company):
     if product == "GAS":
         return 500
     elif product == "S10":
-        if company in ["POOL", "VIBRA"]:
+        if company in ["POO", "PET"]:
             return 1200
         else:
             return 600
