@@ -23,9 +23,12 @@ st.set_page_config(layout="wide")
 # Título da página
 st.title("Agendador de Bombeios")
 
-# Exibir a data de amanhã no início da página
+# Adicionar um seletor de data para o filtro
+data_selecionada = st.date_input("Selecione uma data", pd.to_datetime("today"))
+
+# Exibir a data de hoje ou a selecionada no início da página
 today = pd.to_datetime("today")
-st.markdown(f"**Data:** {today.strftime('%d/%m/%Y')}")
+st.markdown(f"**Data Selecionada:** {data_selecionada.strftime('%d/%m/%Y')}")
 
 # Lista de opções para Companhia e Produto
 company_options = ["POO", "PET", "SIM", "PTS", "FIC", "CJ", "TCT", "TRR", "TSO", "RM", "OPL", "CRS", "TOR", "DM", "SHE"]
@@ -98,65 +101,67 @@ if st.button("Adicionar Bombeio"):
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
-# Exibir os dados adicionados
+# Exibir os dados adicionados filtrados pela data selecionada
 if not st.session_state.data.empty:
-    st.subheader("Dados de Bombeios Agendados")
-    df = st.session_state.data.copy()  # Cria uma cópia do DataFrame para edição
+    st.subheader(f"Dados de Bombeios Agendados para {data_selecionada.strftime('%d/%m/%Y')}")
+    
+    # Filtrar os dados com base na data selecionada
+    df = st.session_state.data[st.session_state.data["Início"].dt.normalize() == pd.to_datetime(data_selecionada)]
 
-    # Variável para armazenar a linha em edição
-    edit_index = st.session_state.get('edit_index', None)
+    if df.empty:
+        st.write("Nenhuma programação encontrada para a data selecionada.")
+    else:
+        # Variável para armazenar a linha em edição
+        edit_index = st.session_state.get('edit_index', None)
 
-    # Cria colunas para os dados e os botões
-    for index, row in df.iterrows():
-        cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
-        with cols[0]:
-            st.write(row.to_frame().T)  # Exibe a linha do DataFrame
-        with cols[1]:
-            if st.button(f"Remover", key=f"remove_{index}"):
-                st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
-                save_data(st.session_state.data)  # Salva os dados no CSV
-                st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
-                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
-        with cols[2]:
-            if st.button(f"Editar", key=f"edit_{index}"):
-                st.session_state.edit_index = index
-                #st.experimental_rerun()
+        # Cria colunas para os dados e os botões
+        for index, row in df.iterrows():
+            cols = st.columns([4, 1, 1])  # Ajuste a proporção conforme necessário
+            with cols[0]:
+                st.write(row.to_frame().T)  # Exibe a linha do DataFrame
+            with cols[1]:
+                if st.button(f"Remover", key=f"remove_{index}"):
+                    st.session_state.data = st.session_state.data.drop(index).reset_index(drop=True)
+                    save_data(st.session_state.data)  # Salva os dados no CSV
+                    st.success(f"Bombeio da companhia {row['Companhia']} removido com sucesso!")
+            with cols[2]:
+                if st.button(f"Editar", key=f"edit_{index}"):
+                    st.session_state.edit_index = index
 
-    # Verifica se há uma linha em edição
-    if edit_index is not None and edit_index < len(df):
-        st.subheader("Editar Bombeio")
-    
-        # Preenche os campos com os dados atuais da linha selecionada
-        edit_company = st.text_input("Companhia", value=df.loc[edit_index, "Companhia"])
-        edit_product = st.text_input("Produto", value=df.loc[edit_index, "Produto"])
-        edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "Cota"]))
-        edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "Início"].strftime("%H:%M"))
-    
-        # Botão para salvar a edição
-        if st.button("Salvar Edição"):
-            try:
-                # Calcula novos valores com base nas edições
-                start_datetime = pd.to_datetime(df.loc[edit_index, "Início"].strftime("%Y-%m-%d") + " " + edit_start_time)
-                flow_rate = get_flow_rate(edit_product, edit_company)
-                end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
-    
-                # Atualiza a linha com os novos valores
-                st.session_state.data.loc[edit_index, "Companhia"] = edit_company
-                st.session_state.data.loc[edit_index, "Produto"] = edit_product
-                st.session_state.data.loc[edit_index, "Cota"] = edit_quota
-                st.session_state.data.loc[edit_index, "Início"] = start_datetime
-                st.session_state.data.loc[edit_index, "Fim"] = end_datetime
-                st.session_state.data.loc[edit_index, "Duração"] = duration_str
-    
-                # Salva os dados editados no CSV
-                save_data(st.session_state.data)
-    
-                # Exibe a mensagem de sucesso e limpa o índice de edição
-                st.success("Bombeio editado com sucesso!")
-                st.session_state.edit_index = None
-                #st.experimental_rerun()  # Atualiza a página para refletir a mudança
-            except ValueError:
-                st.error("Erro ao editar os dados. Verifique os valores inseridos.")
+        # Verifica se há uma linha em edição
+        if edit_index is not None and edit_index < len(df):
+            st.subheader("Editar Bombeio")
+
+            # Preenche os campos com os dados atuais da linha selecionada
+            edit_company = st.text_input("Companhia", value=df.loc[edit_index, "Companhia"])
+            edit_product = st.text_input("Produto", value=df.loc[edit_index, "Produto"])
+            edit_quota = st.number_input("Cota", min_value=0, step=1, value=int(df.loc[edit_index, "Cota"]))
+            edit_start_time = st.text_input("Hora de Início (HH:MM)", value=df.loc[edit_index, "Início"].strftime("%H:%M"))
+
+            # Botão para salvar a edição
+            if st.button("Salvar Edição"):
+                try:
+                    # Calcula novos valores com base nas edições
+                    start_datetime = pd.to_datetime(df.loc[edit_index, "Início"].strftime("%Y-%m-%d") + " " + edit_start_time)
+                    flow_rate = get_flow_rate(edit_product, edit_company)
+                    end_datetime, duration_str = calculate_end_time(start_datetime, edit_quota, flow_rate)
+
+                    # Atualiza a linha com os novos valores
+                    st.session_state.data.loc[edit_index, "Companhia"] = edit_company
+                    st.session_state.data.loc[edit_index, "Produto"] = edit_product
+                    st.session_state.data.loc[edit_index, "Cota"] = edit_quota
+                    st.session_state.data.loc[edit_index, "Início"] = start_datetime
+                    st.session_state.data.loc[edit_index, "Fim"] = end_datetime
+                    st.session_state.data.loc[edit_index, "Duração"] = duration_str
+
+                    # Salva os dados editados no CSV
+                    save_data(st.session_state.data)
+
+                    # Exibe a mensagem de sucesso e limpa o índice de edição
+                    st.success("Bombeio editado com sucesso!")
+                    st.session_state.edit_index = None
+                except ValueError:
+                    st.error("Erro ao editar os dados. Verifique os valores inseridos.")
 
 # Criar uma nova coluna com o nome da companhia e os horários de início e fim
 st.session_state.data["Companhia_Horarios"] = st.session_state.data.apply(
@@ -178,5 +183,6 @@ if not st.session_state.data.empty:
     ).properties(
         title='Gráfico Gantt'
     )
-
+    
     st.altair_chart(chart, use_container_width=True)
+
