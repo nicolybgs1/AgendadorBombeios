@@ -1,4 +1,4 @@
-!pip install firebase-admin
+install firebase-admin
 
 import streamlit as st
 import pandas as pd
