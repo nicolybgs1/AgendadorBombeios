@@ -2,27 +2,20 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
-import firebase_admin
-from firebase_admin import credentials, firestore
 
-# Inicializar o aplicativo Firebase Admin SDK
-cred = credentials.Certificate(r'C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-6d472f8081.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Nome do arquivo CSV para armazenamento
+DATA_FILE = "bombeios_agendados.csv"
 
-# Função para carregar dados do Firestore
+# Função para carregar dados do CSV
 def load_data():
-    docs = db.collection('bombeios').stream()
-    data = []
-    for doc in docs:
-        data.append(doc.to_dict())
-    return pd.DataFrame(data)
+    if os.path.exists(DATA_FILE):
+        return pd.read_csv(DATA_FILE, parse_dates=["Início", "Fim"])
+    else:
+        return pd.DataFrame(columns=["Companhia", "Produto", "Cota", "Início", "Fim", "Duração"])
 
-# Função para salvar dados no Firestore
+# Função para salvar dados no CSV
 def save_data(df):
-    for index, row in df.iterrows():
-        doc_ref = db.collection('bombeios').document(f"{row['Início']}_{row['Companhia']}")
-        doc_ref.set(row.to_dict())
+    df.to_csv(DATA_FILE, index=False)
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
