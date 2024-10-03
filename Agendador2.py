@@ -27,6 +27,13 @@ if not firebase_admin._apps:  # Verifica se já existe uma app inicializada
         db = firestore.client()  # Inicializando o cliente Firestore
         st.success("Firebase initialized successfully.")
 
+    except ValueError as e:
+        st.error(f"Error initializing Firebase: {e}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+else:
+    db = firestore.client()  # Usa a instância já inicializada
+
 
 # Função para carregar os dados
 def load_data():
