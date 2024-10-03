@@ -7,18 +7,9 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
-# Inicializando o Firebase
-try:
-    cred = credentials.Certificate({
-        "type": st.secrets["firebase"]["firebase_type"],
-        "project_id": st.secrets["firebase"]["firebase_project_id"],
-        "private_key_id": st.secrets["firebase"]["firebase_private_key_id"],
-        "private_key": st.secrets["firebase"]["firebase_private_key"].replace('\\n', '\n'),
-        "client_email": st.secrets["firebase"]["firebase_client_email"],
-        "client_id": st.secrets["firebase"]["firebase_client_id"]
-    })
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()
+cred = credentials.Certificate("C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-71b36d56e8.json")
+firebase_admin.initialize_app(cred)
+
 except Exception as e:
     st.error(f"Ocorreu um erro ao inicializar o Firebase: {e}")
 
