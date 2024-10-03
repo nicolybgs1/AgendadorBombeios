@@ -17,7 +17,7 @@ firebase_config = {
 }
 
 # Inicializando o Firebase
-cred = credentials.Certificate(firebase_config)
+cred = credentials.Certificate(json.loads(os.getenv("firebase_credentials_json")))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
