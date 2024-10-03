@@ -7,23 +7,31 @@ from firebase_admin import credentials, firestore
 import json
 
 # Carregar as credenciais do Firebase a partir das variáveis de ambiente
-firebase_config = {
-    "type": os.getenv("firebase_type"),
-    "project_id": os.getenv("firebase_project_id"),
-    "private_key_id": os.getenv("firebase_private_key_id"),
-    "private_key": os.getenv("firebase_private_key").replace('\\n', '\n')
-,
-    "client_email": os.getenv("firebase_client_email"),
-    "client_id": os.getenv("firebase_client_id")
-}
+try:
+    private_key = os.getenv("firebase_private_key").replace('\\n', '\n')
+    
+    if private_key is None:
+        raise ValueError("A chave privada não foi encontrada nas variáveis de ambiente.")
 
-# Convertendo a configuração para JSON
-firebase_credentials_json = json.dumps(firebase_config)
+    firebase_config = {
+        "type": os.getenv("firebase_type"),
+        "project_id": os.getenv("firebase_project_id"),
+        "private_key_id": os.getenv("firebase_private_key_id"),
+        "private_key": private_key,
+        "client_email": os.getenv("firebase_client_email"),
+        "client_id": os.getenv("firebase_client_id")
+    }
 
-# Inicializando o Firebase
-cred = credentials.Certificate(json.loads(firebase_credentials_json))
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+    # Convertendo a configuração para JSON
+    firebase_credentials_json = json.dumps(firebase_config)
+
+    # Inicializando o Firebase
+    cred = credentials.Certificate(json.loads(firebase_credentials_json))
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+
+except Exception as e:
+    st.error(f"Ocorreu um erro ao inicializar o Firebase: {e}")
 
 # Função para carregar dados do Firestore
 def load_data():
