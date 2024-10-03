@@ -6,12 +6,17 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 
+# Defina a configuração da página do Streamlit primeiro
+st.set_page_config(layout="wide")
+
 # Carregar as credenciais do Firebase a partir das variáveis de ambiente
 try:
-    private_key = os.getenv("firebase_private_key").replace('\\n', '\n')
-    
+    # Verifique se a variável de ambiente 'firebase_private_key' está definida
+    private_key = os.getenv("firebase_private_key")
     if private_key is None:
         raise ValueError("A chave privada não foi encontrada nas variáveis de ambiente.")
+
+    private_key = private_key.replace('\\n', '\n')
 
     firebase_config = {
         "type": os.getenv("firebase_type"),
