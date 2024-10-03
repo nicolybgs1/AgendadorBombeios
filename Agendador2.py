@@ -4,10 +4,19 @@ import altair as alt
 import os
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
 
-# Carregar as credenciais do Firebase a partir do Secret Manager do Streamlit
-firebase_config = json.loads(os.getenv("firebase"))
+# Carregar as credenciais do Firebase a partir das variáveis de ambiente
+firebase_config = {
+    "type": os.getenv("firebase_type"),
+    "project_id": os.getenv("firebase_project_id"),
+    "private_key_id": os.getenv("firebase_private_key_id"),
+    "private_key": os.getenv("firebase_private_key").replace('\\n', '\n'),
+    "client_email": os.getenv("firebase_client_email"),
+    "client_id": os.getenv("firebase_client_id")
+}
 
+# Inicializando o Firebase
 cred = credentials.Certificate(firebase_config)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
