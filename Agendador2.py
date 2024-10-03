@@ -1,48 +1,24 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import os
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
 
-# Defina a configuração da página do Streamlit primeiro
+# Configurar a página
 st.set_page_config(layout="wide")
 
-# Carregar as credenciais do Firebase a partir das variáveis de ambiente
+# Inicializando o Firebase
 try:
-    # Carregar variáveis de ambiente
-    private_key = os.getenv("firebase_private_key")
-    if private_key is None:
-        raise ValueError("A chave privada não foi encontrada nas variáveis de ambiente.")
-
-    # Verifique outras variáveis de ambiente
-    firebase_type = os.getenv("firebase_type")
-    project_id = os.getenv("firebase_project_id")
-    private_key_id = os.getenv("firebase_private_key_id")
-    client_email = os.getenv("firebase_client_email")
-    client_id = os.getenv("firebase_client_id")
-
-    if None in [firebase_type, project_id, private_key_id, client_email, client_id]:
-        raise ValueError("Uma ou mais variáveis de ambiente necessárias não foram encontradas.")
-
-    # Formatar a chave privada
-    private_key = private_key.replace('\\n', '\n')
-
-    firebase_config = {
-        "type": firebase_type,
-        "project_id": project_id,
-        "private_key_id": private_key_id,
-        "private_key": private_key,
-        "client_email": client_email,
-        "client_id": client_id
-    }
-
-    # Inicializando o Firebase
-    cred = credentials.Certificate(firebase_config)
+    cred = credentials.Certificate({
+        "type": st.secrets["firebase"]["firebase_type"],
+        "project_id": st.secrets["firebase"]["firebase_project_id"],
+        "private_key_id": st.secrets["firebase"]["firebase_private_key_id"],
+        "private_key": st.secrets["firebase"]["firebase_private_key"].replace('\\n', '\n'),
+        "client_email": st.secrets["firebase"]["firebase_client_email"],
+        "client_id": st.secrets["firebase"]["firebase_client_id"]
+    })
     firebase_admin.initialize_app(cred)
     db = firestore.client()
-
 except Exception as e:
     st.error(f"Ocorreu um erro ao inicializar o Firebase: {e}")
 
