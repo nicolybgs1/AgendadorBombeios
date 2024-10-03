@@ -192,12 +192,3 @@ if not st.session_state.data.empty:
         st.altair_chart(chart, use_container_width=True)
 else:
     st.write("Não há nenhum bombeio agendado.")
-    for doc in docs:
-        print(f'{doc.id} => {doc.to_dict()}')
-except Exception as e:
-    print(f"Ocorreu um erro: {e}")
-
-    for doc in docs:
-        print(f'{doc.id} => {doc.to_dict()}')
-except Exception as e:
-    print(f"Ocorreu um erro: {e}")
