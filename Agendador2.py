@@ -38,9 +38,6 @@ def save_data(df):
         doc_ref = db.collection('bombeios').document(f"{row['Início']}_{row['Companhia']}")
         doc_ref.set(row.to_dict())
 
-# Configura o layout da página
-st.set_page_config(layout="wide")
-
 # Título da página
 st.title("Agendador de Bombeios")
 
