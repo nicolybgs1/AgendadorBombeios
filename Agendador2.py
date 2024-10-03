@@ -22,7 +22,7 @@ try:
         "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
     })
     
-     firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app(cred)
     db = firestore.client()  # Inicializando o cliente Firestore
     st.success("Firebase initialized successfully.")
 
