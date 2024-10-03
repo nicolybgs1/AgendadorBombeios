@@ -16,8 +16,12 @@ try:
         "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
         "client_email": st.secrets["firebase"]["client_email"],
         "client_id": st.secrets["firebase"]["client_id"],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
     })
-
+    
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # Inicializando o cliente Firestore
     st.success("Firebase initialized successfully.")
