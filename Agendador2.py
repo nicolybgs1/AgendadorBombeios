@@ -11,27 +11,35 @@ st.set_page_config(layout="wide")
 
 # Carregar as credenciais do Firebase a partir das variáveis de ambiente
 try:
-    # Verifique se a variável de ambiente 'firebase_private_key' está definida
+    # Carregar variáveis de ambiente
     private_key = os.getenv("firebase_private_key")
     if private_key is None:
         raise ValueError("A chave privada não foi encontrada nas variáveis de ambiente.")
 
+    # Verifique outras variáveis de ambiente
+    firebase_type = os.getenv("firebase_type")
+    project_id = os.getenv("firebase_project_id")
+    private_key_id = os.getenv("firebase_private_key_id")
+    client_email = os.getenv("firebase_client_email")
+    client_id = os.getenv("firebase_client_id")
+
+    if None in [firebase_type, project_id, private_key_id, client_email, client_id]:
+        raise ValueError("Uma ou mais variáveis de ambiente necessárias não foram encontradas.")
+
+    # Formatar a chave privada
     private_key = private_key.replace('\\n', '\n')
 
     firebase_config = {
-        "type": os.getenv("firebase_type"),
-        "project_id": os.getenv("firebase_project_id"),
-        "private_key_id": os.getenv("firebase_private_key_id"),
+        "type": firebase_type,
+        "project_id": project_id,
+        "private_key_id": private_key_id,
         "private_key": private_key,
-        "client_email": os.getenv("firebase_client_email"),
-        "client_id": os.getenv("firebase_client_id")
+        "client_email": client_email,
+        "client_id": client_id
     }
 
-    # Convertendo a configuração para JSON
-    firebase_credentials_json = json.dumps(firebase_config)
-
     # Inicializando o Firebase
-    cred = credentials.Certificate(json.loads(firebase_credentials_json))
+    cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
     db = firestore.client()
 
