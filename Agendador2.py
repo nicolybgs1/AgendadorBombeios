@@ -7,6 +7,10 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
+
+# Título da página
+st.title("Agendador de Bombeios")
+
 # Acessando credenciais de st.secrets
 cred = credentials.Certificate({
     "type": st.secrets["firebase"]["type"],
@@ -37,9 +41,6 @@ def save_data(df):
     for index, row in df.iterrows():
         doc_ref = db.collection('bombeios').document(f"{row['Início']}_{row['Companhia']}")
         doc_ref.set(row.to_dict())
-
-# Título da página
-st.title("Agendador de Bombeios")
 
 # Adicionar um seletor de data para o filtro
 data_selecionada = st.date_input("Selecione uma data", pd.to_datetime("today"))
