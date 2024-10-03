@@ -5,8 +5,10 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Inicializar o aplicativo Firebase Admin SDK
-cred = credentials.Certificate(r'C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-6d472f8081.json')
+# Carregar as credenciais do Firebase a partir do Secret Manager do Streamlit
+firebase_config = json.loads(os.getenv("firebase"))
+
+cred = credentials.Certificate(firebase_config)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
