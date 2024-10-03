@@ -7,7 +7,7 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
-cred = credentials.Certificate("C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-71b36d56e8.json")
+cred = credentials.Certificate(r'C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-71b36d56e8.json')
 firebase_admin.initialize_app(cred)
 
 except Exception as e:
