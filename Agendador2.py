@@ -19,13 +19,13 @@ try:
     })
 
     firebase_admin.initialize_app(cred)
+    db = firestore.client()  # Inicializando o cliente Firestore
     st.success("Firebase initialized successfully.")
 
 except ValueError as e:
     st.error(f"Error initializing Firebase: {e}")
 except Exception as e:
     st.error(f"An unexpected error occurred: {e}")
-
 
 # Função para carregar dados do Firestore
 def load_data():
