@@ -7,16 +7,21 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
-# Usando as credenciais diretamente
+# Acessando credenciais de st.secrets
 cred = credentials.Certificate({
-    "type": "service_account",
-    "project_id": "agendador-c4f32",
-    "private_key_id": "71b36d56e859bb1c67526878f56712c049f42125",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4+wKiWMyS+sf0\nZ1B257jzakPP7xrSgSwEU6Na6bPkO8L+RjyZmmK3cWA/aOYatvl9BSxVVijon3fZ\n1QPDkJcaelyA5OWSqfBD2BEXzD8hdtknLYkZGTIA4Y2REuHYdQa6GH7cFb8FVjZE\nzLk7Q9FdCpP5P34HVsQvlRz85VrjZnFEhPZl0nCjwKByGPYw9q1SMuBgL7dacqbq\nrCwJ8xOwG9BHCrXlzgtD6E9cYqH67nMqlrwczG44nNolTvOXmnU9l/ASzBQQvnMl\nxbBLFLvYTeV5Zc6MMzXzLAf5zxlENFZIncvcYMU0Cl3aEtIXS5vEiHxtH0igu1V+\nXMLmXzYtAgMBAAECggEALYLidceDw6jMX+s4XpzqAgeT2hmxv3d0+TaLwy8rKZzz\nf4SP3dngblJIdClurcV1cic+7lsFsyAjCHbyl1/gcW0IC9VlT1WczdBf+jswEB9x\n04QOTlzG0vUrk7Ux2EQIrOogci0ug5VfwkMdUsG/hdT3rbQLoaodGDjneihC2Z4b\ntr5+GyxAgw7IySgp6tBCw9kQhrhu1NMOvfwohBxuUU0ZoLFw0kpNZFP87EIGXu1G\nZ7bg/lJ/psLmQdfPaTzzDORZHXc4h0EGU9xg+atctsroVI1Z5FVb09XN7x+/dhxB\ngn8NLbWjP3tsIfg7qelkCBvWTkRt12OF9PbobweDiQKBgQD0LrwEn3mR0uRjlnD4\nEJWtLCZkezg/YZA9ZS1ISGI6S0x/xY2+yi2eCLYVSFVQ6iu21c78V2gGq8S7ivvf\nfP2mphniSWRB7EbbO6tYHYEBJkwe8giAKe8U3GykKGoFH/4BZoXnMKE8t76FMfnD\nGQ+/olEGQhjCi74OhAbVnExoCQKBgQDB7szlaYKmpaezQWs1ILKU8H7Qat8Y2cut\n/jlGNhPvtXLs0bpaMdsm2AAcrb9P9np7wsH3eKb626rTtF+Hn0K62gJtAJd0fny8\ndeLXkmytq4X5lLnPCa6ZkPDLQHowesrbND0KvjlAqlP9Pwgs8DCk1sznB6sVh+tF\nhHUL//c+BQKBgA+anPE+r6od6/JhPr7bcHUsiReKuEF0np8NxCMGXSCUh0LzAOfc\nS6X5sIkTokAVds2sRBnkDAXBHEVP0GCrwBnSK31Ga127F5wS6BQtbn0AUYT4uopW\nI60VmOu0mXHSZYz5XD014lfa9hXU570L8PGyEbNwrdxgybhrv3QPFOLhAoGAY0gs\njznf0A64dtWD2/P8WLFySqKbyi4dztp6Wc5vkGVVC5YnD+u8JPupuwTcD0TA2cEP\n6fBTk9OHddA+o8DNubjISyNlZhcnJpg3ZGMqzhIkiWwxX6O2RhnknDlLFKyYU3Y/\n1dMink9Upi5xsgfY71qkFZZgaKpnsPQps9X7rj0CgYEA1EuHyOo1/1y69ep80T+4\nyO+pE88TfqN7PsPTH6jFg7E1/pRA/JUj6UKqw7xRI7pp+Uy8MvUBalYTAq4q/rCx\n3G8cUj6cGsOVGgRRWwWXunS+VHhOLiGZctXC8kgpMR52dtFhdScGznk4V9DS3Fw2\ncny3jcKnqpOZZuycN65+y0Q=\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-1j6rm@agendador-c4f32.iam.gserviceaccount.com",
-    "client_id": "116453878000262451457"
+    "type": st.secrets["firebase"]["type"],
+    "project_id": st.secrets["firebase"]["project_id"],
+    "private_key_id": st.secrets["firebase"]["private_key_id"],
+    "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),  # Substituindo a representação da nova linha
+    "client_email": st.secrets["firebase"]["client_email"],
+    "client_id": st.secrets["firebase"]["client_id"],
+    "auth_uri": st.secrets["firebase"]["auth_uri"],
+    "token_uri": st.secrets["firebase"]["token_uri"],
+    "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
+    "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
 })
 
+# Inicializando o app Firebase
 firebase_admin.initialize_app(cred)
 
 # Função para carregar dados do Firestore
