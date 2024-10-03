@@ -11,7 +11,8 @@ firebase_config = {
     "type": os.getenv("firebase_type"),
     "project_id": os.getenv("firebase_project_id"),
     "private_key_id": os.getenv("firebase_private_key_id"),
-    "private_key": os.getenv("firebase_private_key").replace('\\n', '\n'),
+    "private_key": os.getenv("firebase_private_key").replace('\\n', '\n')
+,
     "client_email": os.getenv("firebase_client_email"),
     "client_id": os.getenv("firebase_client_id")
 }
