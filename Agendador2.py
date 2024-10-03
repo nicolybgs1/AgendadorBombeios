@@ -8,23 +8,24 @@ from firebase_admin import credentials, firestore
 st.set_page_config(layout="wide")
 
 # Inicializando o Firebase
-try:
-    cred = credentials.Certificate({
-        "type": "service_account",
-        "project_id": st.secrets["firebase"]["project_id"],
-        "private_key_id": st.secrets["firebase"]["private_key_id"],
-        "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
-        "client_email": st.secrets["firebase"]["client_email"],
-        "client_id": st.secrets["firebase"]["client_id"],
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
-    })
-    
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()  # Inicializando o cliente Firestore
-    st.success("Firebase initialized successfully.")
+if not firebase_admin._apps:  # Verifica se já existe uma app inicializada
+    try:
+        cred = credentials.Certificate({
+            "type": "service_account",
+            "project_id": st.secrets["firebase"]["project_id"],
+            "private_key_id": st.secrets["firebase"]["private_key_id"],
+            "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
+            "client_email": st.secrets["firebase"]["client_email"],
+            "client_id": st.secrets["firebase"]["client_id"],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
+        })
+        
+        firebase_admin.initialize_app(cred)
+        db = firestore.client()  # Inicializando o cliente Firestore
+        st.success("Firebase initialized successfully.")
 
 except ValueError as e:
     st.error(f"Error initializing Firebase: {e}")
