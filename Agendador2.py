@@ -20,7 +20,8 @@ if not firebase_admin._apps:  # Verifica se já existe uma app inicializada
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
+            "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"],
+            "universe_domain" = st.secrets["firebase"]["universe_domain"]
         })
         
         firebase_admin.initialize_app(cred)
