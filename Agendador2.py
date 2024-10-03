@@ -7,7 +7,15 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
-cred = credentials.Certificate(r'C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-71b36d56e8.json')
+cred = credentials.Certificate({
+    "type": st.secrets["firebase"]["type"],
+    "project_id": st.secrets["firebase"]["project_id"],
+    "private_key_id": st.secrets["firebase"]["private_key_id"],
+    "private_key": st.secrets["firebase"]["private_key"].replace('\\n', '\n'),
+    "client_email": st.secrets["firebase"]["client_email"],
+    "client_id": st.secrets["firebase"]["client_id"]
+})
+
 firebase_admin.initialize_app(cred)
 
 # Função para carregar dados do Firestore
