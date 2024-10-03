@@ -22,7 +22,7 @@ try:
         "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
     })
     
-    firebase_admin.initialize_app(cred)
+     firebase_admin.initialize_app(cred)
     db = firestore.client()  # Inicializando o cliente Firestore
     st.success("Firebase initialized successfully.")
 
@@ -33,7 +33,7 @@ except Exception as e:
 
 # Função para carregar os dados
 def load_data():
-    # A variável db deve estar acessível aqui
+    global db  # Declara db como uma variável global
     docs = db.collection('bombeios').stream()
     return [doc.to_dict() for doc in docs]
 
