@@ -10,9 +10,6 @@ st.set_page_config(layout="wide")
 cred = credentials.Certificate(r'C:\Users\nicoly\Downloads\agendador-c4f32-firebase-adminsdk-1j6rm-71b36d56e8.json')
 firebase_admin.initialize_app(cred)
 
-except Exception as e:
-    st.error(f"Ocorreu um erro ao inicializar o Firebase: {e}")
-
 # Função para carregar dados do Firestore
 def load_data():
     docs = db.collection('bombeios').stream()
