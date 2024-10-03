@@ -7,26 +7,25 @@ from firebase_admin import credentials, firestore
 # Configurar a página
 st.set_page_config(layout="wide")
 
+# Inicializando o Firebase
+try:
+    cred = credentials.Certificate({
+        "type": "service_account",
+        "project_id": st.secrets["firebase"]["project_id"],
+        "private_key_id": st.secrets["firebase"]["private_key_id"],
+        "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
+        "client_email": st.secrets["firebase"]["client_email"],
+        "client_id": st.secrets["firebase"]["client_id"],
+    })
 
-# Título da página
-st.title("Agendador de Bombeios")
+    firebase_admin.initialize_app(cred)
+    st.success("Firebase initialized successfully.")
 
-# Acessando credenciais de st.secrets
-cred = credentials.Certificate({
-    "type": st.secrets["firebase"]["type"],
-    "project_id": st.secrets["firebase"]["project_id"],
-    "private_key_id": st.secrets["firebase"]["private_key_id"],
-    "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),  # Substituindo a representação da nova linha
-    "client_email": st.secrets["firebase"]["client_email"],
-    "client_id": st.secrets["firebase"]["client_id"],
-    "auth_uri": st.secrets["firebase"]["auth_uri"],
-    "token_uri": st.secrets["firebase"]["token_uri"],
-    "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
-    "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"]
-})
+except ValueError as e:
+    st.error(f"Error initializing Firebase: {e}")
+except Exception as e:
+    st.error(f"An unexpected error occurred: {e}")
 
-# Inicializando o app Firebase
-firebase_admin.initialize_app(cred)
 
 # Função para carregar dados do Firestore
 def load_data():
@@ -35,6 +34,9 @@ def load_data():
     for doc in docs:
         data.append(doc.to_dict())
     return pd.DataFrame(data)
+
+# Interface do usuário
+st.title("Agendador de Bombeios")
 
 # Função para salvar dados no Firestore
 def save_data(df):
