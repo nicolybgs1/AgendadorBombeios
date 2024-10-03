@@ -16,8 +16,11 @@ firebase_config = {
     "client_id": os.getenv("firebase_client_id")
 }
 
+# Convertendo a configuração para JSON
+firebase_credentials_json = json.dumps(firebase_config)
+
 # Inicializando o Firebase
-cred = credentials.Certificate(json.loads(os.getenv("firebase_credentials_json")))
+cred = credentials.Certificate(json.loads(firebase_credentials_json))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
