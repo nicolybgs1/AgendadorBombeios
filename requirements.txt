@@ -1,7 +1,0 @@
-pandas 
-altair 
-streamlit 
-openpyxl 
-os
-json
-firebase-admin
