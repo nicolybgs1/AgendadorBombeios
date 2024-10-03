@@ -31,14 +31,16 @@ except ValueError as e:
 except Exception as e:
     st.error(f"An unexpected error occurred: {e}")
 
-# Função para carregar dados do Firestore
+# Função para carregar os dados
 def load_data():
+    # A variável db deve estar acessível aqui
     docs = db.collection('bombeios').stream()
-    data = []
-    for doc in docs:
-        data.append(doc.to_dict())
-    return pd.DataFrame(data)
+    return [doc.to_dict() for doc in docs]
 
+# Carregando os dados
+if 'data' not in st.session_state:
+    st.session_state.data = load_data()
+    
 # Interface do usuário
 st.title("Agendador de Bombeios")
 
