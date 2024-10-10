@@ -11,7 +11,7 @@ def get_sql_server_connection():
     try:
         conn = pyodbc.connect(
             'DRIVER={SQL Server};'
-            'SERVER=192.168.16.80\sqlserver;'  # Certifique-se de que o nome do servidor está correto
+            'SERVER=192.168.16.80\\sqlserver;'  # Certifique-se de que o nome do servidor está correto
             'DATABASE=KernSQL;'
             'UID=UserPowerBI;'
             'PWD=eod.pwb.24'
@@ -25,6 +25,8 @@ def get_sql_server_connection():
 # Função para carregar o histórico de bombeios anteriores do SQL Server
 def load_pump_schedule_history(company, product):
     conn = get_sql_server_connection()
+    if conn is None:
+        return None
     query = f"""
         SELECT TOP 1 HoraBombIni
         FROM tbBombeios
@@ -59,7 +61,18 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# Demais funções (get_flow_rate, calculate_end_time) aqui
+# Aqui você deve definir as funções get_flow_rate e calculate_end_time
+# Para exemplo, vamos criar funções fictícias
+def get_flow_rate(product, company):
+    # Simula a obtenção da taxa de fluxo
+    return 10  # Substitua por lógica real
+
+def calculate_end_time(start_datetime, quota, flow_rate):
+    # Simula o cálculo da hora de término
+    duration = quota / flow_rate  # Duração em horas
+    end_datetime = start_datetime + pd.Timedelta(hours=duration)
+    duration_str = f"{duration:.2f} horas"
+    return end_datetime, duration_str
 
 # Configura o layout da página
 st.set_page_config(layout="wide")
@@ -93,9 +106,8 @@ if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
     
     if flow_rate:
-        # Sugere o próximo horário de início com base no histórico de bombeios
-        suggested_start_time = suggest_start_time(company, product)
-        start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + suggested_start_time.strftime("%H:%M"))
+        # Usa a hora de início selecionada pelo usuário ou a sugerida
+        start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M"))
         
         # Calcula a hora de término e duração
         end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
