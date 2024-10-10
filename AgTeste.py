@@ -70,8 +70,14 @@ company = st.selectbox("Companhia", company_options)
 product = st.selectbox("Produto", product_options)
 quota = st.number_input("Cota", min_value=0, step=1)
 
+# Sugere o horário de início com base no histórico de bombeios no SQL Server
 suggested_time = suggest_start_time(company, product)
+
+# Input para hora de início
 start_time = st.time_input("Hora de Início (HH:MM)", suggested_time)
+
+# Exibe a sugestão de horário
+st.write(f"Sugestão de Hora de Início: {suggested_time}")
 
 # Inicializa o estado da sessão
 if "data" not in st.session_state:
