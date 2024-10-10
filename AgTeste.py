@@ -26,6 +26,7 @@ def get_sql_server_connection():
 def load_pump_schedule_history(company, product):
     conn = get_sql_server_connection()
     if conn is None:
+        st.error("Falha ao conectar ao banco de dados.")
         return None
     query = f"""
         SELECT TOP 1 HoraBombIni
@@ -36,9 +37,13 @@ def load_pump_schedule_history(company, product):
     """
     df = pd.read_sql(query, conn)
     conn.close()
+    
+    print(f"Consulta executada para a companhia: {company}, produto: {product}.")
     if not df.empty:
+        print("Última Hora de Início encontrada:", df['HoraBombIni'].iloc[0])
         return df['HoraBombIni'].iloc[0]
     else:
+        print("Nenhum registro encontrado.")
         return None
 
 # Função para sugerir o próximo horário de início com base no histórico de bombeios
@@ -46,8 +51,10 @@ def suggest_start_time(company, product):
     last_start_time = load_pump_schedule_history(company, product)
     if last_start_time:
         suggested_start_time = (pd.to_datetime(last_start_time) + pd.Timedelta(minutes=15)).time()
+        print("Hora sugerida:", suggested_start_time)
         return suggested_start_time
     else:
+        print("Nenhuma hora anterior encontrada. Usando 00:00 como sugestão.")
         return pd.to_datetime("00:00").time()
 
 # Função para carregar dados do CSV local
