@@ -11,7 +11,7 @@ def get_sql_server_connection():
     try:
         conn = pyodbc.connect(
             'DRIVER={SQL Server};'
-            'SERVER=192.168.16.80\SQLSERVER;'  # Certifique-se de que o nome do servidor está correto
+            'SERVER=192.168.16.80\\SQLSERVER;'  # Corrigido o escape da barra invertida
             'DATABASE=KernSQL;'
             'UID=UserPowerBI;'
             'PWD=eod.pwb.24'
@@ -96,7 +96,10 @@ product = st.selectbox("Produto", product_options)
 quota = st.number_input("Cota", min_value=0, step=1)
 
 # Sugere o horário de início com base no histórico de bombeios no SQL Server
-suggested_time = suggest_start_time(company, product)
+if company and product:  # Garante que a seleção é válida antes de sugerir horário
+    suggested_time = suggest_start_time(company, product)
+else:
+    suggested_time = pd.to_datetime("00:00").time()
 
 # Input para hora de início
 start_time = st.time_input("Hora de Início (HH:MM)", suggested_time)
@@ -150,3 +153,4 @@ if not st.session_state.data.empty:
 
 else:
     st.write("Nenhum bombeio agendado ainda.")
+
