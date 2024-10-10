@@ -8,7 +8,7 @@ import pyodbc
 def get_sql_server_connection():
     conn = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=192.168.16.80\kern;'
+        'SERVER=192.168.16.80;'
         'DATABASE=KernSQL;'
         'UID=UserPowerBI;'
         'PWD=eod.pwb.24'
