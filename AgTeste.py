@@ -8,14 +8,19 @@ DATA_FILE = "data.csv"  # Substitua pelo caminho correto do seu CSV
 
 # Configura a conexão ao SQL Server
 def get_sql_server_connection():
-    conn = pyodbc.connect(
-        'DRIVER={SQL Server};'
-        'SERVER=192.168.16.80\sqlserver;'
-        'DATABASE=KernSQL;'
-        'UID=UserPowerBI;'
-        'PWD=eod.pwb.24'
-    )
-    return conn
+    try:
+        conn = pyodbc.connect(
+            'DRIVER={SQL Server};'
+            'SERVER=192.168.16.80\sqlserver;'  # Certifique-se de que o nome do servidor está correto
+            'DATABASE=KernSQL;'
+            'UID=UserPowerBI;'
+            'PWD=eod.pwb.24'
+        )
+        print("Conexão estabelecida com sucesso!")
+        return conn
+    except pyodbc.Error as e:
+        print("Erro ao conectar ao SQL Server:", e)
+        return None
 
 # Função para carregar o histórico de bombeios anteriores do SQL Server
 def load_pump_schedule_history(company, product):
