@@ -11,7 +11,7 @@ def get_sql_server_connection():
     try:
         conn = pyodbc.connect(
             'DRIVER={SQL Server};'
-            'SERVER=192.168.16.80\sqlserver;'  # Certifique-se de que o nome do servidor está correto
+            'SERVER=192.168.16.80\SQLSERVER;'  # Certifique-se de que o nome do servidor está correto
             'DATABASE=KernSQL;'
             'UID=UserPowerBI;'
             'PWD=eod.pwb.24'
