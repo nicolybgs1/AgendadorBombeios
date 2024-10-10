@@ -86,25 +86,29 @@ if "data" not in st.session_state:
 # Adiciona um novo bombeio
 if st.button("Adicionar Bombeio"):
     flow_rate = get_flow_rate(product, company)
+    
     if flow_rate:
-        try:
-            start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M"))
-            end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
+        # Sugere o próximo horário de início com base no histórico de bombeios
+        suggested_start_time = suggest_start_time(company, product)
+        start_datetime = pd.to_datetime(data_selecionada.strftime("%Y-%m-%d") + " " + suggested_start_time.strftime("%H:%M"))
+        
+        # Calcula a hora de término e duração
+        end_datetime, duration_str = calculate_end_time(start_datetime, quota, flow_rate)
 
-            new_bomb = pd.DataFrame([{
-                "Companhia": company,
-                "Produto": product,
-                "Cota": quota,
-                "Início": start_datetime,
-                "Fim": end_datetime,
-                "Duração": duration_str
-            }])
-            
-            st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
-            save_data(st.session_state.data)
-            st.success("Bombeio adicionado com sucesso!")
-        except ValueError:
-            st.error("Formato de hora de início inválido. Use HH:MM.")
+        # Cria o DataFrame para o novo bombeio
+        new_bomb = pd.DataFrame([{
+            "Companhia": company,
+            "Produto": product,
+            "Cota": quota,
+            "Início": start_datetime,
+            "Fim": end_datetime,
+            "Duração": duration_str
+        }])
+        
+        # Atualiza os dados da sessão e salva no CSV
+        st.session_state.data = pd.concat([st.session_state.data, new_bomb], ignore_index=True)
+        save_data(st.session_state.data)
+        st.success("Bombeio adicionado com sucesso!")
     else:
         st.error("Produto ou Companhia inválidos. Verifique os valores.")
 
