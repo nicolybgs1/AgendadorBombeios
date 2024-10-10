@@ -4,9 +4,6 @@ import altair as alt
 import os
 import pyodbc
 
-# Nome do arquivo CSV para armazenamento local
-DATA_FILE = "bombeios_agendados.csv"
-
 # Configura a conexão ao SQL Server
 def get_sql_server_connection():
     conn = pyodbc.connect(
@@ -38,14 +35,13 @@ def load_pump_schedule_history(company, product):
         return None  # Retorna None se não houver histórico
 
 # Função para sugerir o próximo horário de início com base no histórico de bombeios
-def suggest_start_time(company, product, selected_date):
-    history_df = load_pump_schedule_history(company, product, selected_date)
+def suggest_start_time(company, product):
+    last_start_time = load_pump_schedule_history(company, product)
     
-    if not history_df.empty:
-        # Sugere 15 minutos após o fim do último bombeio
-        last_end_time = history_df['Fim'].iloc[0]
-        suggested_start_time = last_end_time + pd.Timedelta(minutes=15)
-        return suggested_start_time.time()
+    if last_start_time:
+        # Sugere 15 minutos após o último horário registrado
+        suggested_start_time = (pd.to_datetime(last_start_time) + pd.Timedelta(minutes=15)).time()
+        return suggested_start_time
     else:
         # Caso não haja histórico, sugere o horário padrão (00:00)
         return pd.to_datetime("00:00").time()
