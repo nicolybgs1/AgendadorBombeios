@@ -10,7 +10,7 @@ DATA_FILE = "data.csv"  # Substitua pelo caminho correto do seu CSV
 def get_sql_server_connection():
     conn = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=192.168.16.80;'
+        'SERVER=192.168.16.80\sqlserver;'
         'DATABASE=KernSQL;'
         'UID=UserPowerBI;'
         'PWD=eod.pwb.24'
